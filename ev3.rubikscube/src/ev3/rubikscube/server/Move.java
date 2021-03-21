@@ -1,4 +1,4 @@
-package ev3.rubikscube.moves;
+package ev3.rubikscube.server;
 
 public interface Move {
 

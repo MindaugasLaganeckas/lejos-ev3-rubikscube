@@ -1,5 +1,7 @@
 package ev3.rubikscube.moves;
 
+import ev3.rubikscube.fork.ForkStateController;
+import ev3.rubikscube.server.Move;
 import lejos.hardware.motor.Motor;
 import lejos.robotics.RegulatedMotor;
 
@@ -7,17 +9,17 @@ public class Up2 implements Move {
 
 	private final RegulatedMotor leftMotor;
 	private final RegulatedMotor rightMotor;
-	private final RegulatedMotor backMotor;
+	private final ForkStateController forkStateController;
 	
-	public Up2() {
+	public Up2(final ForkStateController forkStateController) {
 		this.leftMotor = Motor.A;
 		this.rightMotor = Motor.D;
-		this.backMotor = Motor.C;
+		this.forkStateController = forkStateController;
 	}
 
 	@Override
 	public void action() {
-		backMotor.rotate(180);
+		forkStateController.setStateToOff();
 		
 		leftMotor.synchronizeWith(new RegulatedMotor[] {rightMotor});
 		leftMotor.startSynchronization();
@@ -26,8 +28,6 @@ public class Up2 implements Move {
 		leftMotor.endSynchronization();
 		leftMotor.waitComplete();
 		rightMotor.waitComplete();
-		
-		backMotor.rotate(180);
 	}
 
 }

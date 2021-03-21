@@ -1,5 +1,7 @@
 package ev3.rubikscube.moves;
 
+import ev3.rubikscube.server.Move;
+
 public class D2 implements Move {
 
 	private final Up upToFront;

@@ -1,25 +1,28 @@
 package ev3.rubikscube.moves;
 
+import ev3.rubikscube.fork.ForkStateController;
+import ev3.rubikscube.server.Move;
 import lejos.hardware.motor.Motor;
 import lejos.robotics.RegulatedMotor;
 
 public class Fi implements Move {
 
-	private final RegulatedMotor forkMotor;
-	private final RegulatedMotor backMotor;
 	private final int direction = 1;
+	private final RegulatedMotor forkMotor;
+	private final ForkStateController forkStateController;
 	
-	public Fi() {
+	public Fi(final ForkStateController forkStateController) {
 		this.forkMotor = Motor.B;
-		this.backMotor = Motor.C;
+		this.forkStateController = forkStateController;
 	}
 
 	@Override
 	public void action() {
+		forkStateController.setStateToOn();
 		forkMotor.rotate(direction * -45);
-		backMotor.rotate(180);
+		forkStateController.setStateToOff();
 		forkMotor.rotate(direction * 95);
-		backMotor.rotate(180);
+		forkStateController.setStateToOn();
 		forkMotor.rotate(direction * -60);
 		forkMotor.rotate(direction * 10);
 	}
