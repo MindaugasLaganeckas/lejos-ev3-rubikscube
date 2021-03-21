@@ -1,7 +1,6 @@
 package it.polito.elite.teaching.cv;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -14,7 +13,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
-import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
@@ -22,12 +20,8 @@ import org.opencv.videoio.VideoCapture;
 import it.polito.elite.teaching.cv.utils.Utils;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
-import javafx.scene.shape.Rectangle;
 
 /**
  * The controller associated with the only view of our application. The
@@ -53,17 +47,6 @@ public class ImageSegController {
 	@FXML
 	private ImageView processedFrame;
 	// checkbox for enabling/disabling Canny
-	@FXML
-	private CheckBox canny;
-	// canny threshold value
-	@FXML
-	private Slider threshold;
-	// checkbox for enabling/disabling background removal
-	@FXML
-	private CheckBox dilateErode;
-	// inverse the threshold value for background removal
-	@FXML
-	private CheckBox inverse;
 
 	// a timer for acquiring the video stream
 	private ScheduledExecutorService timer;
@@ -74,10 +57,6 @@ public class ImageSegController {
 
 	Point clickedPoint = new Point(0, 0);
 	Mat oldFrame;
-
-	protected void init() {
-		this.threshold.setShowTickLabels(true);
-	}
 
 	/**
 	 * The action triggered by pushing the button on the GUI
@@ -102,9 +81,6 @@ public class ImageSegController {
 		});
 
 		if (!this.cameraActive) {
-			// disable setting checkboxes
-			this.canny.setDisable(true);
-			this.dilateErode.setDisable(true);
 
 			// start the video capture
 			this.capture.open(0);
@@ -139,9 +115,6 @@ public class ImageSegController {
 			this.cameraActive = false;
 			// update again the button content
 			this.cameraButton.setText("Start Camera");
-			// enable setting checkboxes
-			this.canny.setDisable(false);
-			this.dilateErode.setDisable(false);
 
 			// stop the timer
 			this.stopAcquisition();
@@ -169,7 +142,14 @@ public class ImageSegController {
 			
 			int sensitivity = 5;
 
-			int[] colors = new int[] {5, 15, 30, 70, 105};
+			int[] colors = new int[] 
+					{
+							5,  // red
+							15, // orange 
+							35, // yellow
+							75, // green
+							105 // blue
+							};
 			Scalar[] cls = new Scalar[] {
 					new Scalar(0, 0, 255),
 					new Scalar(0, 100, 255),
@@ -212,12 +192,19 @@ public class ImageSegController {
 		final Point center = new Point(originalFrame.width() / 2, originalFrame.height() / 2);
 		pointsOfInterest.add(center);
 		int edgeLength = 140;
-		pointsOfInterest.add(new Point(center.x, center.y + edgeLength));
-		pointsOfInterest.add(new Point(center.x + edgeLength, center.y + edgeLength));
-		pointsOfInterest.add(new Point(center.x - edgeLength, center.y + edgeLength));
+		
+		pointsOfInterest.add(new Point(center.x - edgeLength, center.y - edgeLength));
 		pointsOfInterest.add(new Point(center.x, center.y - edgeLength));
 		pointsOfInterest.add(new Point(center.x + edgeLength, center.y - edgeLength));
-		pointsOfInterest.add(new Point(center.x - edgeLength, center.y - edgeLength));
+		
+		pointsOfInterest.add(new Point(center.x - edgeLength, center.y));
+		pointsOfInterest.add(new Point(center.x, center.y));
+		pointsOfInterest.add(new Point(center.x + edgeLength, center.y));
+		
+		pointsOfInterest.add(new Point(center.x - edgeLength, center.y + edgeLength));
+		pointsOfInterest.add(new Point(center.x, center.y + edgeLength));
+		pointsOfInterest.add(new Point(center.x + edgeLength, center.y + edgeLength));
+		
 		return pointsOfInterest;
 	}
 
@@ -250,50 +237,6 @@ public class ImageSegController {
 	private void drawRect(Mat dest, Scalar color, final Point p) {
 		int delta = 60;
 		Imgproc.rectangle(dest, new Point(p.x + delta, p.y + delta), new Point(p.x - delta, p.y - delta) , color, -1);
-	}
-
-	/**
-	 * Action triggered when the Canny checkbox is selected
-	 * 
-	 */
-	@FXML
-	protected void cannySelected() {
-		// check whether the other checkbox is selected and deselect it
-		if (this.dilateErode.isSelected()) {
-			this.dilateErode.setSelected(false);
-			this.inverse.setDisable(true);
-		}
-
-		// enable the threshold slider
-		if (this.canny.isSelected())
-			this.threshold.setDisable(false);
-		else
-			this.threshold.setDisable(true);
-
-		// now the capture can start
-		this.cameraButton.setDisable(false);
-	}
-
-	/**
-	 * Action triggered when the "background removal" checkbox is selected
-	 */
-	@FXML
-	protected void dilateErodeSelected() {
-		// check whether the canny checkbox is selected, deselect it and disable
-		// its slider
-
-		if (this.canny.isSelected()) {
-			this.canny.setSelected(false);
-			this.threshold.setDisable(true);
-		}
-
-		if (this.dilateErode.isSelected())
-			this.inverse.setDisable(false);
-		else
-			this.inverse.setDisable(true);
-
-		// now the capture can start
-		this.cameraButton.setDisable(false);
 	}
 
 	/**
@@ -333,5 +276,4 @@ public class ImageSegController {
 	protected void setClosed() {
 		this.stopAcquisition();
 	}
-
 }

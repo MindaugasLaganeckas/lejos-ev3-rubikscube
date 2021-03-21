@@ -20,7 +20,7 @@ public class ImageSegmentation extends Application
 	 * to remove a uniform background with the erosion and dilation operators.
 	 * 
 	 * @author <a href="mailto:luigi.derussis@polito.it">Luigi De Russis</a>
-	 * @author <a href="mailto:alberto.cannavo@polito.it">Alberto Cannavò</a>
+	 * @author <a href="mailto:alberto.cannavo@polito.it">Alberto Cannavï¿½</a>
 	 * @version 2.0 (2017-03-10)
 	 * @since 1.0 (2013-12-20)
 	 * 
@@ -49,7 +49,6 @@ public class ImageSegmentation extends Application
 			
 			// get the controller
 			ImageSegController controller = loader.getController();			
-			controller.init();
 			
 			// set the proper behavior on closing the application
 			primaryStage.setOnCloseRequest((new EventHandler<WindowEvent>() {
