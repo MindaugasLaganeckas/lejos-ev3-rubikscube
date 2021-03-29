@@ -1,5 +1,7 @@
 package it.polito.elite.teaching.cv;
 	
+import java.io.IOException;
+
 import org.opencv.core.Core;
 
 import javafx.application.Application;
@@ -54,7 +56,12 @@ public class ImageSegmentation extends Application
 			primaryStage.setOnCloseRequest((new EventHandler<WindowEvent>() {
 				public void handle(WindowEvent we)
 				{
-					controller.setClosed();
+					try {
+						controller.setClosed();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}));
 		}
