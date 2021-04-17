@@ -1,9 +1,11 @@
-package ev3.rubikscube.controller.frameprocessor;
+package ev3.rubikscube.controller.frameprocessor.decorator;
 
 import java.util.LinkedList;
 import java.util.List;
 
 import org.opencv.core.Point;
+
+import ev3.rubikscube.controller.frameprocessor.FrameDecorator;
 
 public abstract class AbstractFrameDecorator implements FrameDecorator {
 

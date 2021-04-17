@@ -1,4 +1,4 @@
-package ev3.rubikscube.controller.frameprocessor;
+package ev3.rubikscube.controller.frameprocessor.decorator;
 
 import java.util.List;
 

@@ -14,19 +14,6 @@ import javafx.fxml.FXMLLoader;
 
 public class ImageSegmentation extends Application
 {
-	/**
-	 * The main class for a JavaFX application. It creates and handle the main
-	 * window with its resources (style, graphics, etc.).
-	 * 
-	 * This application apply the Canny filter to the camera video stream or try
-	 * to remove a uniform background with the erosion and dilation operators.
-	 * 
-	 * @author <a href="mailto:luigi.derussis@polito.it">Luigi De Russis</a>
-	 * @author <a href="mailto:alberto.cannavo@polito.it">Alberto Cannav�</a>
-	 * @version 2.0 (2017-03-10)
-	 * @since 1.0 (2013-12-20)
-	 * 
-	 */
 	@Override
 	public void start(Stage primaryStage)
 	{

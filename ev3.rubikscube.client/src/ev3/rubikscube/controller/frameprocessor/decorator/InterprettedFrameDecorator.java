@@ -1,4 +1,4 @@
-package ev3.rubikscube.controller.frameprocessor;
+package ev3.rubikscube.controller.frameprocessor.decorator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,12 +18,12 @@ public class InterprettedFrameDecorator extends AbstractFrameDecorator {
 	public Mat decorate(Mat input) {
 		final List<Point> pointsOfInterest = calcPointsOfInterest(input.width(), input.height());
 		
-		Scalar defaultWhite = new Scalar(255, 255, 255);
-		Mat dest = Mat.zeros(input.size(), CvType.CV_8UC3);
+		final Scalar defaultWhite = new Scalar(255, 255, 255);
+		final Mat dest = Mat.zeros(input.size(), CvType.CV_8UC3);
 		
-		int sensitivity = 5;
+		final int sensitivity = 5;
 
-		int[] colors = new int[] 
+		final int[] colors = new int[] 
 				{
 						5,  // red
 						15, // orange 
@@ -31,7 +31,8 @@ public class InterprettedFrameDecorator extends AbstractFrameDecorator {
 						75, // green
 						105 // blue
 						};
-		Scalar[] cls = new Scalar[] {
+		
+		final Scalar[] cls = new Scalar[] {
 				new Scalar(0, 0, 255),
 				new Scalar(0, 100, 255),
 				new Scalar(0, 255, 255),
@@ -44,10 +45,10 @@ public class InterprettedFrameDecorator extends AbstractFrameDecorator {
 			for (int i = 0; i < cls.length; i++) {
 				
 				// Change color with your actual color
-				Scalar lower = new Scalar(colors[i] - sensitivity, 100, 20);
-				Scalar upper = new Scalar(colors[i] + sensitivity, 255, 255);
+				final Scalar lower = new Scalar(colors[i] - sensitivity, 100, 20);
+				final Scalar upper = new Scalar(colors[i] + sensitivity, 255, 255);
 
-				Mat hsv = input.clone();
+				final Mat hsv = input.clone();
 				Imgproc.cvtColor(input, hsv, Imgproc.COLOR_BGR2HSV);
 
 				Core.inRange(hsv, lower, upper, hsv); // hsv
@@ -64,13 +65,13 @@ public class InterprettedFrameDecorator extends AbstractFrameDecorator {
 	}
 	
 	private void drawRect(Mat dest, Scalar color, final Point p) {
-		int delta = 60;
+		final int delta = 60;
 		Imgproc.rectangle(dest, new Point(p.x + delta, p.y + delta), new Point(p.x - delta, p.y - delta) , color, -1);
 	}
 	
 	private boolean findAndDrawContours(Mat maskedImage, Mat dest, Scalar color, Point p) {
 		// init
-		List<MatOfPoint> contours = new ArrayList<>();
+		final List<MatOfPoint> contours = new ArrayList<>();
 		
 		// Find contours
 		Imgproc.findContours(maskedImage, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);

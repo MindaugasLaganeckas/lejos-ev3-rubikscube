@@ -6,10 +6,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import ev3.rubikscube.controller.frameprocessor.DottedFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.FrameGrabber;
 import ev3.rubikscube.controller.frameprocessor.FrameObserver;
-import ev3.rubikscube.controller.frameprocessor.InterprettedFrameDecorator;
+import ev3.rubikscube.controller.frameprocessor.decorator.DottedFrameDecorator;
+import ev3.rubikscube.controller.frameprocessor.decorator.InterprettedFrameDecorator;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
