@@ -1,5 +1,6 @@
 package ev3.rubikscube.controller.frameprocessor.decorator;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.opencv.core.Mat;
@@ -21,5 +22,27 @@ public class DottedFrameDecorator extends AbstractFrameDecorator {
 			Imgproc.circle(clone, p, 5, blue, -1);
 		});
 		return clone;
+	}
+	
+	protected int edgeLength = 210;
+	
+	protected List<Point> calcPointsOfInterest(final int frameWidth, final int frameHeight) {
+		final List<Point> pointsOfInterest = new LinkedList<>();
+		final Point center = new Point(frameWidth / 2, frameHeight / 2);
+		pointsOfInterest.add(center);
+		
+		pointsOfInterest.add(new Point(center.x - edgeLength, center.y - edgeLength));
+		pointsOfInterest.add(new Point(center.x, center.y - edgeLength));
+		pointsOfInterest.add(new Point(center.x + edgeLength, center.y - edgeLength));
+		
+		pointsOfInterest.add(new Point(center.x - edgeLength / 3 * 2, center.y));
+		pointsOfInterest.add(new Point(center.x, center.y));
+		pointsOfInterest.add(new Point(center.x + edgeLength / 3 * 2, center.y));
+		
+		pointsOfInterest.add(new Point(center.x - edgeLength, center.y + edgeLength));
+		pointsOfInterest.add(new Point(center.x, center.y + edgeLength));
+		pointsOfInterest.add(new Point(center.x + edgeLength, center.y + edgeLength));
+		
+		return pointsOfInterest;
 	}
 }

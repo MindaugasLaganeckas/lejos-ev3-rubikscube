@@ -7,22 +7,35 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="it.polito.elite.teaching.cv.ImageSegController">
-  <bottom>
-    <HBox alignment="CENTER">
-      <padding>
-        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
-      </padding>
-      <Button fx:id="cameraButton" alignment="CENTER" disable="false" onAction="#startCamera" text="Start camera" />
-    </HBox>
-  </bottom>
-  <center>
-    <HBox alignment="CENTER">
-      <padding>
-        <Insets left="10.0" right="10.0" />
-      </padding>
-      <ImageView fx:id="originalFrame" />
-      <ImageView fx:id="processedFrame" />
-    </HBox>
-  </center>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1"
+	xmlns="http://javafx.com/javafx/2.2"
+	fx:controller="it.polito.elite.teaching.cv.ImageSegController">
+	<bottom>
+		<HBox alignment="CENTER">
+			<padding>
+				<Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+			</padding>
+			<Button fx:id="cameraButton" alignment="CENTER"
+				disable="false" onAction="#startCamera" text="Start camera" />
+		</HBox>
+	</bottom>
+	
+	<left>
+		<VBox alignment="CENTER" spacing="10">
+			<padding>
+				<Insets right="10" left="10" />
+			</padding>
+			<Slider fx:id="redUpper" min="0" max="180" value="10" blockIncrement="1" />
+			<Slider fx:id="redLower" min="0" max="180" value=" 0" blockIncrement="1" />
+		</VBox>
+	</left>
+	<center>
+		<HBox alignment="CENTER">
+			<padding>
+				<Insets left="10.0" right="10.0" />
+			</padding>
+			<ImageView fx:id="originalFrame" />
+			<ImageView fx:id="processedFrame" />
+		</HBox>
+	</center>
 </BorderPane>

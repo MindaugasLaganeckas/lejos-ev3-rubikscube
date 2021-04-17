@@ -6,12 +6,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import ev3.rubikscube.controller.frameprocessor.CubeColors;
 import ev3.rubikscube.controller.frameprocessor.FrameGrabber;
 import ev3.rubikscube.controller.frameprocessor.FrameObserver;
 import ev3.rubikscube.controller.frameprocessor.decorator.DottedFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.InterprettedFrameDecorator;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 
 public class ImageSegController {
@@ -27,8 +31,15 @@ public class ImageSegController {
 	// a timer for acquiring the video stream
 	private ScheduledExecutorService timer;
 	
+	@FXML
+	private Slider redUpper;
+	@FXML
+	private Slider redLower;
+	
 	private Runnable frameGrabber;
 
+	private InterprettedFrameDecorator decorator = new InterprettedFrameDecorator();
+	
 	/**
 	 * The action triggered by pushing the button on the GUI
 	 * @throws IOException 
@@ -44,12 +55,26 @@ public class ImageSegController {
 		processedFrame.setFitWidth(380);
 		// preserve image ratio
 		processedFrame.setPreserveRatio(true);
+		
+		redUpper.valueProperty().addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observableValue, Number oldValue, Number newValue) {
+				decorator.setUpper(CubeColors.RED, newValue.intValue());
+				
+			}
+		});
+		redLower.valueProperty().addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observableValue, Number oldValue, Number newValue) {
+				decorator.setLower(CubeColors.RED, newValue.intValue());
+			}
+		});
 
 		// grab a frame every 33 ms (30 frames/sec)
 		this.frameGrabber = new FrameGrabber( 
 				new FrameObserver[] {
 						new FrameObserver(originalFrame, new DottedFrameDecorator()),
-						new FrameObserver(processedFrame, new InterprettedFrameDecorator()),
+						new FrameObserver(processedFrame, decorator),
 			}
 		);
 
