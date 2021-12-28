@@ -14,12 +14,14 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import ev3.rubikscube.controller.frameprocessor.CubeColors;
+import ev3.rubikscube.controller.frameprocessor.FrameDecorator;
 
-public class InterprettedFrameDecorator extends AbstractFrameDecorator {
+public class InterprettedFrameDecorator implements FrameDecorator {
 
 	private int[] lowerRanges = new int[] { 0, 10, 30, 70, 100, 250 };
 	private int[] upperRanges = new int[] { 10, 30, 40, 80, 110, 255 };
-
+	protected int edgeLength = 140;
+	
 	@Override
 	public Mat decorate(Mat input) {
 		final List<Point> pointsOfInterest = calcPointsOfInterest(input.width(), input.height());
@@ -75,8 +77,6 @@ public class InterprettedFrameDecorator extends AbstractFrameDecorator {
 	public void setUpper(CubeColors color, int value) {
 		upperRanges[color.ordinal()] = value;
 	}
-	
-	protected int edgeLength = 140;
 	
 	protected List<Point> calcPointsOfInterest(final int frameWidth, final int frameHeight) {
 		final List<Point> pointsOfInterest = new LinkedList<>();

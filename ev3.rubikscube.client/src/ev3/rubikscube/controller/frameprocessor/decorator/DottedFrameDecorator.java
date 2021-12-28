@@ -8,8 +8,12 @@ import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-public class DottedFrameDecorator extends AbstractFrameDecorator {
-	
+import ev3.rubikscube.controller.frameprocessor.FrameDecorator;
+
+public class DottedFrameDecorator implements FrameDecorator {
+
+	protected int edgeLength = 210;
+
 	@Override
 	public Mat decorate(Mat input) {
 		return createFrameWithDots(input, calcPointsOfInterest(input.width(), input.height()));
@@ -23,9 +27,7 @@ public class DottedFrameDecorator extends AbstractFrameDecorator {
 		});
 		return clone;
 	}
-	
-	protected int edgeLength = 210;
-	
+		
 	protected List<Point> calcPointsOfInterest(final int frameWidth, final int frameHeight) {
 		final List<Point> pointsOfInterest = new LinkedList<>();
 		final Point center = new Point(frameWidth / 2, frameHeight / 2);
