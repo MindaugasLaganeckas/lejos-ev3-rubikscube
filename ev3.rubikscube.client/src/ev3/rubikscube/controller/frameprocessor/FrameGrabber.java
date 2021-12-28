@@ -11,10 +11,10 @@ public class FrameGrabber implements Runnable, Closeable {
 	private final VideoCapture capture;
 	private final FrameObserver[] observers;
 	
-	public FrameGrabber(final FrameObserver[] observers) {
-		this.capture = new VideoCapture(1);
+	public FrameGrabber(final FrameObserver[] observers, final int videoDeviceIndex) {
+		this.capture = new VideoCapture(videoDeviceIndex);
 		// start the video capture
-		this.capture.open(0);
+		this.capture.open(videoDeviceIndex);
 		
 		this.observers = observers;
 	}

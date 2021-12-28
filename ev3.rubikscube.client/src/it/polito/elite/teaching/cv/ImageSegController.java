@@ -20,6 +20,8 @@ import javafx.scene.image.ImageView;
 
 public class ImageSegController {
 
+	private static final int VIDEO_DEVICE_INDEX = 1;
+	
 	// FXML buttons
 	@FXML
 	private Button cameraButton;
@@ -75,7 +77,7 @@ public class ImageSegController {
 				new FrameObserver[] {
 						new FrameObserver(originalFrame, new DottedFrameDecorator()),
 						new FrameObserver(processedFrame, decorator),
-			}
+			}, VIDEO_DEVICE_INDEX
 		);
 
 		this.timer = Executors.newSingleThreadScheduledExecutor();
