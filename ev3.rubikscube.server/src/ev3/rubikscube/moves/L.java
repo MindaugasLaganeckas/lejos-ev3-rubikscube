@@ -17,7 +17,7 @@ public class L implements Move {
 
 	public void action() {
 		forkStateController.setStateToOn();
-		motor.rotate(-100);
-		motor.rotate(10);
+		motor.rotate(285);
+		motor.rotate(-15);
 	}
 }
