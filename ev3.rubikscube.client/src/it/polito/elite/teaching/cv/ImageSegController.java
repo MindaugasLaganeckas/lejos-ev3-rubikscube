@@ -18,9 +18,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 
-public class ImageSegController {
+public class ImageSegController implements Closeable {
 
-	private static final int VIDEO_DEVICE_INDEX = 1;
+	private static final int VIDEO_DEVICE_INDEX = 0;
 	
 	// FXML buttons
 	@FXML
@@ -111,5 +111,10 @@ public class ImageSegController {
 	 */
 	protected void setClosed() throws IOException {
 		this.stopAcquisition();
+	}
+
+	@Override
+	public void close() throws IOException {
+		setClosed();
 	}
 }

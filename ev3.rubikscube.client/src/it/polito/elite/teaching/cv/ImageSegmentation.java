@@ -37,7 +37,7 @@ public class ImageSegmentation extends Application
 			primaryStage.show();
 			
 			// get the controller
-			ImageSegController controller = loader.getController();			
+			final ImageSegController controller = loader.getController();			
 			
 			// set the proper behavior on closing the application
 			primaryStage.setOnCloseRequest((new EventHandler<WindowEvent>() {
@@ -57,7 +57,7 @@ public class ImageSegmentation extends Application
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void main(String[] args)
 	{
 		// load the native OpenCV library

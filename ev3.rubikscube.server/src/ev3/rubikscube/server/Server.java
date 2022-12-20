@@ -59,7 +59,7 @@ public class Server {
 	private static void readCubeColors(final DataInputStream din, final DataOutputStream dout) throws Exception {
 		
 		final String turns = "DOWN DOWN DOWN DOWN";
-		for (final String s : turns .split("\s+")) {
+		for (final String s : turns .split("\\s+")) {
 			moveMap.get(s).action();
 			// inform the client that the turn is complete
 			dout.write(0);
@@ -75,7 +75,7 @@ public class Server {
 	 * @param solution E.g. "U2 R2 B2 R  B2 R  F2 U     L2 D2 L' F2 L2 F2 U2"
 	 */
 	private static void executeTurns(final String solution) {
-		for (final String s : solution.split("\s+")) {
+		for (final String s : solution.split("\\s+")) {
 			moveMap.get(s).action();
 		}
 	}
