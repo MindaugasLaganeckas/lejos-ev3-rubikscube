@@ -10,11 +10,45 @@ import java.util.Map;
 import ev3.rubikscube.fork.ForkState;
 import ev3.rubikscube.fork.ForkStateController;
 import ev3.rubikscube.moves.*;
+import lejos.hardware.BrickFinder;
+import lejos.hardware.Button;
+import lejos.hardware.lcd.Font;
+import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.motor.Motor;
 import lejos.robotics.RegulatedMotor;
 
 public class Server {
 
+	private static final int FINISH_100 = 100;
+
+	private static Map<Integer, String> communicationCodes = new HashMap<Integer, String>() {
+		private static final long serialVersionUID = 1L;
+	{
+		put(1, "B");
+		put(2, "B2");
+		put(3, "B'");
+
+		put(4, "D");
+		put(5, "D2");
+		put(6, "D'");
+
+		put(7, "F");
+		put(8, "F2");
+		put(9, "F'");
+
+		put(10, "L");
+		put(11, "L2");
+		put(12, "L'");
+
+		put(13, "R");
+		put(14, "R2");
+		put(15, "R'");
+
+		put(16, "U");
+		put(17, "U2");
+		put(18, "U'");
+	}};
+	
 	private static Map<String, Move> moveMap = new HashMap<>();
 
 	private static final RegulatedMotor leftSide = Motor.A;
@@ -22,7 +56,7 @@ public class Server {
 	private static final RegulatedMotor forkMotor = Motor.B;
 	private static final RegulatedMotor backMotor = Motor.C;
 	
-	private static final int port = 3333; 
+	private static final int port = 3333;
 	
 	public static void main(String[] args) throws Exception {
 		final ForkStateController forkStateController = new ForkStateController(ForkState.OFF, backMotor);
@@ -42,41 +76,41 @@ public class Server {
 
 	private static void startServer(final int port) throws Exception {
 
-		try (final ServerSocket ss = new ServerSocket(port);
-				final Socket s = ss.accept();
-				final DataInputStream din = new DataInputStream(s.getInputStream());
-				final DataOutputStream dout = new DataOutputStream(s.getOutputStream());) {
-			int str = 0;
-			while (str != 100) {
-				str = din.read();
-				dout.write(0);
-				dout.flush();
-				readCubeColors(din, dout);
-			}
-		}
-	}
+        //System.out.println("Running...");
+        final GraphicsLCD g = BrickFinder.getDefault().getGraphicsLCD();
+        final int SW = g.getWidth();
+        final int SH = g.getHeight();
+        g.setFont(Font.getLargeFont());
+        
+		try (final ServerSocket ss = new ServerSocket(port)) {
 
-	private static void readCubeColors(final DataInputStream din, final DataOutputStream dout) throws Exception {
-		
-		final String turns = "DOWN DOWN DOWN DOWN";
-		for (final String s : turns .split("\\s+")) {
-			moveMap.get(s).action();
-			// inform the client that the turn is complete
-			dout.write(0);
-			dout.flush();
-			// wait for the client to read the colors
-			final int responseCode = din.read();
-			if (responseCode != 0) throw new RuntimeException(String.valueOf(responseCode));
-		}
-	}
-	
-	/**
-	 * 
-	 * @param solution E.g. "U2 R2 B2 R  B2 R  F2 U     L2 D2 L' F2 L2 F2 U2"
-	 */
-	private static void executeTurns(final String solution) {
-		for (final String s : solution.split("\\s+")) {
-			moveMap.get(s).action();
+	        while (true) {
+	        	
+	        	Button.LEDPattern(4);
+		        g.clear();
+		        g.refresh();
+		        g.drawString("Waiting", SW/2, SH/2, GraphicsLCD.BASELINE|GraphicsLCD.HCENTER);
+		        
+				try(final Socket s = ss.accept();
+						final DataInputStream din = new DataInputStream(s.getInputStream());
+						final DataOutputStream dout = new DataOutputStream(s.getOutputStream());) {
+					
+			        g.clear();
+			        g.refresh();
+			        g.drawString("Connected", SW/2, SH/2, GraphicsLCD.BASELINE|GraphicsLCD.HCENTER);
+			        Button.LEDPattern(0);
+			        
+					int code = 0;
+					while (code != FINISH_100) {
+						code = din.read();
+						if (code != FINISH_100) {
+							moveMap.get(communicationCodes.get(code)).action();							
+						}
+						dout.write(0);
+						dout.flush();
+					}
+				}
+			}
 		}
 	}
 
@@ -88,8 +122,6 @@ public class Server {
 	}
 
 	private static void initMap(final ForkStateController forkStateController) {
-		
-		
 		
 		final Up up = new Up(forkStateController);
 		final Up2 up2 = new Up2(forkStateController);

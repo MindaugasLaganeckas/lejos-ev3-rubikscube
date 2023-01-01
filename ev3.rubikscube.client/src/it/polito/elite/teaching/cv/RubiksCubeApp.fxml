@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.image.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane prefHeight="600.0" prefWidth="2000.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.polito.elite.teaching.cv.RubiksCubeAppController">
+<center>
+<VBox>
+  <children>
+    <SplitPane dividerPositions="0.2505567928730512" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
+      <items>
+        <AnchorPane maxWidth="-Infinity" minWidth="400.0" prefWidth="400.0">
+          <children>
+                  <VBox prefHeight="400.0" prefWidth="400.0">
+                  	 <padding>
+						<Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+					 </padding>
+                     <children>
+                        <Label text="Controls" />
+                        <Label text="Mindstorm IP " />
+                        <TextField />
+                        <Button fx:id="connectButton" mnemonicParsing="false" text="Connect" onAction="#connect" />
+                        <Button fx:id="cameraButton" alignment="CENTER" disable="false" onAction="#startCamera" text="Start camera" />
+                     </children>
+                  </VBox>
+          </children>
+        </AnchorPane>
+            <SplitPane dividerPositions="0.29797979797979796, 0.5" prefHeight="160.0" prefWidth="200.0">
+              <items>
+                <AnchorPane maxWidth="-Infinity" minWidth="-Infinity" prefWidth="500.0">
+                     <children>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                           <children>
+                              <Label text="Camera view" />
+                              <ImageView fx:id="originalFrame" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </AnchorPane>
+                <AnchorPane maxWidth="-Infinity" minWidth="-Infinity" prefWidth="500.0">
+                     <children>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                           <children>
+                              <Label text="Computer vision view" />
+                              <ImageView fx:id="processedFrame" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane maxWidth="-Infinity" minWidth="-Infinity">
+                     <children>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                           <children>
+                              <Label text="Details" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </AnchorPane>
+              </items>
+            </SplitPane>
+      </items>
+    </SplitPane>
+    <HBox id="HBox" alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="NEVER">
+      <children>
+                  <Group fx:id="cubeMapGroup">
+                     <children>
+            			<TilePane fx:id="cubeMap" prefColumns="12" prefHeight="577.0" prefRows="9" prefTileHeight="50.0" prefTileWidth="50.0" prefWidth="758.0" />
+                     </children>
+                  </Group>
+      </children>
+      <padding>
+        <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+      </padding>
+    </HBox>
+  </children>
+</VBox>
+</center>
+</BorderPane>

@@ -2,10 +2,12 @@ package it.polito.elite.teaching.cv;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import ev3.rubikscube.controller.Client;
 import ev3.rubikscube.controller.frameprocessor.CubeColors;
 import ev3.rubikscube.controller.frameprocessor.FrameGrabber;
 import ev3.rubikscube.controller.frameprocessor.FrameObserver;
@@ -13,19 +15,38 @@ import ev3.rubikscube.controller.frameprocessor.decorator.DottedFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.InterprettedFrameDecorator;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
+import javafx.scene.shape.Rectangle;
 
-public class ImageSegController implements Closeable {
+public class RubiksCubeAppController implements Closeable {
 
 	private static final int VIDEO_DEVICE_INDEX = 0;
 	
-	// FXML buttons
+	private static final int SERVER_PORT = 3333;
+	private static final String SERVER_IP = "192.168.1.130";
+	
+	private List<Rectangle> rectangles;
+	
+	//private final Client client;
+	
+	public void setRectangles(List<Rectangle> rectangles) {
+		this.rectangles = rectangles;
+	}
+
+	public RubiksCubeAppController() throws Exception {
+		//client = new Client(SERVER_IP, SERVER_PORT);
+	}
+	
+	@FXML
+	private Button connectButton;
 	@FXML
 	private Button cameraButton;
-	// the FXML area for showing the current frame
 	@FXML
 	private ImageView originalFrame;
 	@FXML
@@ -33,15 +54,20 @@ public class ImageSegController implements Closeable {
 	// a timer for acquiring the video stream
 	private ScheduledExecutorService timer;
 	
-	@FXML
+	/*@FXML
 	private Slider redUpper;
 	@FXML
-	private Slider redLower;
+	private Slider redLower;*/
 	
 	private Runnable frameGrabber;
 
 	private InterprettedFrameDecorator decorator = new InterprettedFrameDecorator();
 	
+	@FXML
+	protected void connect() throws IOException {
+		System.out.println("Clicked");
+	}
+
 	/**
 	 * The action triggered by pushing the button on the GUI
 	 * @throws IOException 
@@ -58,7 +84,7 @@ public class ImageSegController implements Closeable {
 		// preserve image ratio
 		processedFrame.setPreserveRatio(true);
 		
-		redUpper.valueProperty().addListener(new ChangeListener<Number>() {
+		/*redUpper.valueProperty().addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observableValue, Number oldValue, Number newValue) {
 				decorator.setUpper(CubeColors.RED, newValue.intValue());
@@ -70,7 +96,7 @@ public class ImageSegController implements Closeable {
 			public void changed(ObservableValue<? extends Number> observableValue, Number oldValue, Number newValue) {
 				decorator.setLower(CubeColors.RED, newValue.intValue());
 			}
-		});
+		});*/
 
 		// grab a frame every 33 ms (30 frames/sec)
 		this.frameGrabber = new FrameGrabber( 
@@ -99,8 +125,7 @@ public class ImageSegController implements Closeable {
 				this.timer.awaitTermination(33, TimeUnit.MILLISECONDS);
 				((Closeable)this.frameGrabber).close();
 			} catch (InterruptedException e) {
-				// log any exception
-				System.err.println("Exception in stopping the frame capture, trying to release the camera now... " + e);
+				e.printStackTrace();
 			}
 		}
 	}
@@ -115,6 +140,15 @@ public class ImageSegController implements Closeable {
 
 	@Override
 	public void close() throws IOException {
-		setClosed();
+		try {
+			setClosed();			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			//client.close();			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
