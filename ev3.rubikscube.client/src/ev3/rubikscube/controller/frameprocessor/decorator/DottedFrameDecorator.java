@@ -37,9 +37,9 @@ public class DottedFrameDecorator implements FrameDecorator {
 		pointsOfInterest.add(new Point(center.x, center.y - edgeLength));
 		pointsOfInterest.add(new Point(center.x + edgeLength, center.y - edgeLength));
 		
-		pointsOfInterest.add(new Point(center.x - edgeLength / 3 * 2, center.y));
+		pointsOfInterest.add(new Point(center.x - edgeLength, center.y));
 		pointsOfInterest.add(new Point(center.x, center.y));
-		pointsOfInterest.add(new Point(center.x + edgeLength / 3 * 2, center.y));
+		pointsOfInterest.add(new Point(center.x + edgeLength, center.y));
 		
 		pointsOfInterest.add(new Point(center.x - edgeLength, center.y + edgeLength));
 		pointsOfInterest.add(new Point(center.x, center.y + edgeLength));

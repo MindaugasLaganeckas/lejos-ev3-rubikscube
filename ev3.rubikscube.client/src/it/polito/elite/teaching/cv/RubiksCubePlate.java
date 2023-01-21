@@ -10,11 +10,8 @@ public class RubiksCubePlate extends StackPane {
 
 	private final Rectangle rectangle;
 	
-	private final String[] colors = new String[] {
-			"white", "orange", "blue", "yellow", "red", "green"
-	};
-	
 	private int currentColor = 0;
+	private boolean colorIsLocked = false;
 	
 	public RubiksCubePlate(final int width, final int height, final int positionX, final int positionY, final String label) {
 		rectangle = new Rectangle(width, height);
@@ -29,9 +26,25 @@ public class RubiksCubePlate extends StackPane {
         this.setOnMouseClicked(new EventHandler<Event>() {
     		@Override
     		public void handle(Event event) {
-    			currentColor = (currentColor + 1) % colors.length;
-    			rectangle.setStyle("-fx-fill: " + colors[currentColor] + "; -fx-stroke: black; -fx-stroke-width: 5;");
+    			if (!colorIsLocked) {
+    				setNextColor();
+        			updateColor();	
+    			}
     		}
         });
+	}
+	private void updateColor() {
+		rectangle.setStyle("-fx-fill: " + getColor() + "; -fx-stroke: black; -fx-stroke-width: 5;");
+	}
+	private void setNextColor() {
+		currentColor = (currentColor + 1) % RubiksCubeColors.values().length;
+	}
+	public RubiksCubeColors getColor() {
+		return RubiksCubeColors.values()[currentColor];
+	}
+	public void setAndLockColor(final RubiksCubeColors color) {
+		currentColor = color.ordinal();
+		updateColor();
+		colorIsLocked = true;
 	}
 }

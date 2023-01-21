@@ -24,10 +24,44 @@
 					 </padding>
                      <children>
                         <Label text="Controls" />
-                        <Label text="Mindstorm IP " />
-                        <TextField />
-                        <Button fx:id="connectButton" mnemonicParsing="false" text="Connect" onAction="#connect" />
-                        <Button fx:id="cameraButton" alignment="CENTER" disable="false" onAction="#startCamera" text="Start camera" />
+                        <Label text="Mindstorm IP ">
+                                 <VBox.margin>
+                                    <Insets top="20.0" />
+                                 </VBox.margin></Label>
+                        <TextField fx:id="robotIp" text="192.168.1.130">
+                                 <VBox.margin>
+                                    <Insets top="10.0" />
+                                 </VBox.margin></TextField>
+                        <Button fx:id="connectButton" mnemonicParsing="false" onAction="#connect" text="Connect">
+                                 <VBox.margin>
+                                    <Insets top="10.0" />
+                                 </VBox.margin></Button>
+                              <Label fx:id="connectionStatus" text="Connection status">
+                                 <VBox.margin>
+                                    <Insets top="10.0" />
+                                 </VBox.margin>
+                              </Label>
+                        <Button fx:id="cameraButton" alignment="CENTER" disable="false" onAction="#startCamera" text="Start camera">
+                                 <VBox.margin>
+                                    <Insets top="10.0" />
+                                 </VBox.margin></Button>
+                        <Button fx:id="calculateSolution" alignment="CENTER" disable="false" onAction="#calculateSolution" text="Calculate solution">
+                                 <VBox.margin>
+                                    <Insets top="10.0" />
+                                 </VBox.margin></Button>
+                              <Label fx:id="solution" text="Solution">
+                                 <VBox.margin>
+                                    <Insets top="10.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <Button fx:id="sendSolutionToRobot" alignment="CENTER" disable="false" onAction="#sendSolutionToRobot" text="Send solution to robot">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                                 <VBox.margin>
+                                    <Insets top="10.0" />
+                                 </VBox.margin>
+                              </Button>
                      </children>
                   </VBox>
           </children>

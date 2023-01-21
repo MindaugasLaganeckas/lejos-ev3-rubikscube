@@ -2,8 +2,6 @@ package it.polito.elite.teaching.cv;
 	
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import org.opencv.core.Core;
@@ -18,14 +16,13 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Rectangle;
 import javafx.fxml.FXMLLoader;
 
 public class RubiksCubeApp extends Application
 {
     private int rows = 9;
     private int columns = 12;
-	
+    
     private final Map<Integer, String> plateMap = new HashMap<>() {
 		private static final long serialVersionUID = 1L;
 	{
@@ -62,14 +59,14 @@ public class RubiksCubeApp extends Application
 			primaryStage.setTitle("Robot control center");
 			primaryStage.setScene(scene);
 			
-			final List<Rectangle> list = drawCubeMap(cubeMap, cubeMapGroup);
+			final Map<String, RubiksCubePlate> drawCubeMap = drawCubeMap(cubeMap, cubeMapGroup);
 
 			// show the GUI
 			primaryStage.show();
 			
 			// get the controller
 			final RubiksCubeAppController controller = loader.getController();
-			controller.setRectangles(list);
+			controller.setRectangles(drawCubeMap);
 			
 			// set the proper behavior on closing the application
 			primaryStage.setOnCloseRequest((new EventHandler<WindowEvent>() {
@@ -91,8 +88,8 @@ public class RubiksCubeApp extends Application
 		}
 	}
 
-	private List<Rectangle> drawCubeMap(final TilePane cubeMap, final Group cubeMapGroup) {
-		final List<Rectangle> list = new LinkedList<>();
+	private Map<String, RubiksCubePlate> drawCubeMap(final TilePane cubeMap, final Group cubeMapGroup) {
+		final Map<String, RubiksCubePlate> kubeColors = new HashMap<>();
 		int index = 0;
 		for (int row = 0; row < rows; row++) {
 		    for (int col = 0; col < columns; col++) {
@@ -102,19 +99,20 @@ public class RubiksCubeApp extends Application
 		    			for (int j = 0; j < 3; j++) {
 		    				final int x = index / columns + i;
 		    				final int y = index % columns + j;
-		    				cubeMapGroup.getChildren().add(new RubiksCubePlate(
+		    				final RubiksCubePlate plate = new RubiksCubePlate(
 		    		        		cubeMap.tileWidthProperty().intValue(), 
 		    		        		cubeMap.tileHeightProperty().intValue(), 
-		    		        		y, x, plateMap.get(index) + littleIndex));
+		    		        		y, x, plateMap.get(index) + littleIndex);
+		    				kubeColors.put(plateMap.get(index) + littleIndex, plate);
+		    				cubeMapGroup.getChildren().add(plate);
 		    				littleIndex++;
-		    				
 		    			}
 		    		}
 		    	}
 		    	index++;
 		    }
 		}
-		return list;
+		return kubeColors;
 	}
 
 	public static void main(String[] args)

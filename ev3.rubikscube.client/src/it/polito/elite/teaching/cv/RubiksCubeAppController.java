@@ -2,12 +2,15 @@ package it.polito.elite.teaching.cv;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import ev3.rubikscube.controller.Client;
+import ev3.rubikscube.controller.RubiksCuberSolverClient;
 import ev3.rubikscube.controller.frameprocessor.CubeColors;
 import ev3.rubikscube.controller.frameprocessor.FrameGrabber;
 import ev3.rubikscube.controller.frameprocessor.FrameObserver;
@@ -20,7 +23,9 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.shape.Rectangle;
 
@@ -29,28 +34,49 @@ public class RubiksCubeAppController implements Closeable {
 	private static final int VIDEO_DEVICE_INDEX = 0;
 	
 	private static final int SERVER_PORT = 3333;
-	private static final String SERVER_IP = "192.168.1.130";
 	
-	private List<Rectangle> rectangles;
+	private Map<String, RubiksCubePlate> kubeColors;
+	private Map<RubiksCubeColors, String> colorCoding = new HashMap<>() {
+		private static final long serialVersionUID = 1L;
+	{
+        put(RubiksCubeColors.ORANGE, "U");
+        put(RubiksCubeColors.WHITE, "L");
+        
+        put(RubiksCubeColors.BLUE,  "F");
+        put(RubiksCubeColors.YELLOW,  "R");
+        
+        put(RubiksCubeColors.GREEN,   "B");
+        put(RubiksCubeColors.RED,    "D");
+    }};
 	
-	//private final Client client;
+    private final RubiksCuberSolverClient solverClient = new RubiksCuberSolverClient();
+	private Client client;
 	
-	public void setRectangles(List<Rectangle> rectangles) {
-		this.rectangles = rectangles;
+	public void setRectangles(final Map<String, RubiksCubePlate> kubeColors) {
+		this.kubeColors = kubeColors;
+		for (final Entry<RubiksCubeColors, String> entry : colorCoding.entrySet()) {
+			kubeColors.get(entry.getValue() + "5").setAndLockColor(entry.getKey());
+		}
 	}
-
-	public RubiksCubeAppController() throws Exception {
-		//client = new Client(SERVER_IP, SERVER_PORT);
-	}
+	
+	private String solutionStr;
 	
 	@FXML
 	private Button connectButton;
 	@FXML
 	private Button cameraButton;
 	@FXML
+	private Button colorsButton;
+	@FXML
 	private ImageView originalFrame;
 	@FXML
 	private ImageView processedFrame;
+	@FXML
+	private Label solution;
+	@FXML
+	private Label connectionStatus;
+	@FXML
+	private TextField robotIp;
 	// a timer for acquiring the video stream
 	private ScheduledExecutorService timer;
 	
@@ -64,10 +90,37 @@ public class RubiksCubeAppController implements Closeable {
 	private InterprettedFrameDecorator decorator = new InterprettedFrameDecorator();
 	
 	@FXML
-	protected void connect() throws IOException {
-		System.out.println("Clicked");
+	protected void connect() {
+		try {
+			client = new Client(robotIp.getText(), SERVER_PORT);
+			connectionStatus.setText("Connection status: connected.");
+		} catch (Exception e) {
+			connectionStatus.setText("Connection status: " + e.getMessage());
+			e.printStackTrace();
+		}
 	}
-
+	
+	@FXML
+	protected void calculateSolution() throws IOException {
+		final String[] facesInOrder = new String[] {"U", "R", "F", "D", "L", "B"};
+		final StringBuilder scrambledCube = new StringBuilder();
+		for (final String face : facesInOrder) {
+			for (int j = 1; j <= 9; j++) {
+				scrambledCube.append(colorCoding.get(kubeColors.get(face + j).getColor()));
+			}
+		}
+		System.out.println(scrambledCube);
+		solutionStr = solverClient.solve(scrambledCube.toString());
+		this.solution.setText("Solution: " + solutionStr);
+	}
+	
+	@FXML
+	protected void sendSolutionToRobot() throws IOException {
+		for (final String turn : solutionStr.split("\\s+")) {
+			client.sendCommand(turn);			
+		}
+	}
+	
 	/**
 	 * The action triggered by pushing the button on the GUI
 	 * @throws IOException 
@@ -136,17 +189,19 @@ public class RubiksCubeAppController implements Closeable {
 	 */
 	protected void setClosed() throws IOException {
 		this.stopAcquisition();
+		try {
+			if (client != null) {
+				client.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void close() throws IOException {
 		try {
 			setClosed();			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			//client.close();			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

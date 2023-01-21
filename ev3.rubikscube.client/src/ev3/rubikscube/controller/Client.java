@@ -13,6 +13,8 @@ import java.util.Random;
 
 public class Client implements Closeable {
 
+	private static String COMMAND_FINISH = "FINISH";
+	
 	private static final Map<String, Integer> communicationCodes = new LinkedHashMap<>() {
 		private static final long serialVersionUID = 1L;
 	{
@@ -40,26 +42,12 @@ public class Client implements Closeable {
 		put("U2", 17);
 		put("U'", 18);
 		
-		put("FINISH", 100);
+		put(COMMAND_FINISH, 100);
 	}};
 	
 	private final Socket socket;
 	private final DataInputStream din;
 	private final DataOutputStream dout;
-	
-	public static void main(String[] args) throws Exception{
-		try (final Client client = new Client("192.168.1.130", 3333);) {
-			final List<String> list = new LinkedList<>(communicationCodes.keySet());
-			final Random rand = new Random();
-			int counter = 0;
-			while (counter  < 20) {
-				final String code = list.get(rand.nextInt(list.size() - 1));
-				client.sendCommand(code);
-				counter++;
-			}
-			client.sendCommand("FINISH");
-		}
-	}
 	
 	public Client(final String address, final int port) throws Exception {
 		this.socket = new Socket(address, port);
@@ -67,7 +55,7 @@ public class Client implements Closeable {
 		this.dout = new DataOutputStream(socket.getOutputStream());
 	}
 	
-	public void sendCommand(final String command) throws Exception {
+	public void sendCommand(final String command) throws IOException {
 		System.out.println("Sending " + command);
 		final int code = communicationCodes.get(command);
 		dout.write(code);
@@ -80,6 +68,7 @@ public class Client implements Closeable {
 	
 	@Override
 	public void close() throws IOException {
+		sendCommand(COMMAND_FINISH);
 		if (socket != null) {
 			socket.close();
 		}
@@ -88,6 +77,19 @@ public class Client implements Closeable {
 		}
 		if (dout != null) {
 			dout.close();
+		}
+	}
+	
+	public static void main(String[] args) throws Exception{
+		try (final Client client = new Client("192.168.1.130", 3333);) {
+			final List<String> list = new LinkedList<>(communicationCodes.keySet());
+			final Random rand = new Random();
+			int counter = 0;
+			while (counter  < 20) {
+				final String code = list.get(rand.nextInt(list.size() - 1));
+				client.sendCommand(code);
+				counter++;
+			}
 		}
 	}
 }

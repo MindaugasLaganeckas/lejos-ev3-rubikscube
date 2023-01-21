@@ -55,12 +55,11 @@ public class Server {
 	private static final RegulatedMotor rightSide = Motor.D;
 	private static final RegulatedMotor forkMotor = Motor.B;
 	private static final RegulatedMotor backMotor = Motor.C;
+	private static final ForkStateController forkStateController = new ForkStateController(ForkState.OFF, backMotor);
 	
 	private static final int port = 3333;
 	
-	public static void main(String[] args) throws Exception {
-		final ForkStateController forkStateController = new ForkStateController(ForkState.OFF, backMotor);
-		
+	public static void main(String[] args) throws Exception {	
 		init(forkStateController);
 		startServer(port);
 	}
@@ -109,6 +108,7 @@ public class Server {
 						dout.write(0);
 						dout.flush();
 					}
+					forkStateController.setStateToOff();
 				}
 			}
 		}
