@@ -114,6 +114,11 @@
                         
                            <children>
 								<Label prefHeight="15.0" prefWidth="157.0" text="Computer vision view" />
+								<ImageView fx:id="contourView">
+									<VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                </ImageView>
 								<ImageView fx:id="processedFrame">
 									<VBox.margin>
                                           <Insets top="10.0" />

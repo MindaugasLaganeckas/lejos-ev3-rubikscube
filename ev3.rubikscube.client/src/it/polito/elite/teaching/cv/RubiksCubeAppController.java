@@ -14,6 +14,7 @@ import ev3.rubikscube.controller.RubiksCuberSolverClient;
 import ev3.rubikscube.controller.frameprocessor.CubeColors;
 import ev3.rubikscube.controller.frameprocessor.FrameGrabber;
 import ev3.rubikscube.controller.frameprocessor.FrameObserver;
+import ev3.rubikscube.controller.frameprocessor.decorator.ContourFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.DottedFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.InterprettedFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.Utils;
@@ -91,6 +92,8 @@ public class RubiksCubeAppController implements Closeable {
 	private ImageView originalFrame;
 	@FXML
 	private ImageView processedFrame;
+	@FXML
+	private ImageView contourView;
 	@FXML
 	private Label solution;
 	@FXML
@@ -216,25 +219,17 @@ public class RubiksCubeAppController implements Closeable {
 		// preserve image ratio
 		processedFrame.setPreserveRatio(true);
 		
-		/*redUpper.valueProperty().addListener(new ChangeListener<Number>() {
-			@Override
-			public void changed(ObservableValue<? extends Number> observableValue, Number oldValue, Number newValue) {
-				decorator.setUpper(CubeColors.RED, newValue.intValue());
-				
-			}
-		});
-		redLower.valueProperty().addListener(new ChangeListener<Number>() {
-			@Override
-			public void changed(ObservableValue<? extends Number> observableValue, Number oldValue, Number newValue) {
-				decorator.setLower(CubeColors.RED, newValue.intValue());
-			}
-		});*/
-
+		// set a fixed width for the frame
+		contourView.setFitWidth(380);
+		// preserve image ratio
+		contourView.setPreserveRatio(true);
+		
 		// grab a frame every 33 ms (30 frames/sec)
 		this.frameGrabber = new FrameGrabber( 
 				new FrameObserver[] {
 						new FrameObserver(originalFrame, new DottedFrameDecorator()),
 						new FrameObserver(processedFrame, decorator),
+						new FrameObserver(contourView, new ContourFrameDecorator(lowerRanges, upperRanges)),
 			}, VIDEO_DEVICE_INDEX
 		);
 
