@@ -2,14 +2,20 @@ package ev3.rubikscube.controller.frameprocessor.decorator;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import org.opencv.core.Point;
 
-public class Utils {
-	
+import ev3.rubikscube.controller.frameprocessor.CubeColors;
+import it.polito.elite.teaching.cv.RubiksCubeColors;
+
+public class ColorHitCounter {
+
 	private static final int EDGE_LENGTH = 150;
 	
 	public static final int NUMBER_OF_POINTS = 9;
+	
+	private final AtomicIntegerArray counters = new AtomicIntegerArray(CubeColors.values().length * NUMBER_OF_POINTS);
 	
 	public static List<Point> calcPointsOfInterest(final int frameWidth, final int frameHeight) {
 		return calcPointsOfInterest(frameWidth, frameHeight, EDGE_LENGTH);
@@ -36,5 +42,26 @@ public class Utils {
 		}
 		
 		return pointsOfInterest;
+	}
+	
+	public void inc(final CubeColors color, final int faceId) {
+		counters.getAndIncrement(faceId * CubeColors.values().length + color.ordinal());
+	}
+	
+	public RubiksCubeColors get(final int faceId) {
+		int max = 0;
+		int colorIndex = 0;
+		final int length = CubeColors.values().length;
+		for (int i = 0; i < length; i++) {
+			final int value = counters.get(faceId * length + i);
+			if (max < value) {
+				max = value;
+				colorIndex = i;
+			}
+		}
+		if (max < 10) {
+			return RubiksCubeColors.WHITE;
+		}
+		return RubiksCubeColors.values()[colorIndex];
 	}
 }

@@ -18,7 +18,7 @@ public class ContourFrameDecorator implements FrameDecorator {
 
 	private final int[] lowerRanges;
 	private final int[] upperRanges;
-	
+
 	public ContourFrameDecorator(final int[] lowerRanges, final int[] upperRanges) {
 		this.lowerRanges = lowerRanges;
 		this.upperRanges = upperRanges;
@@ -46,7 +46,7 @@ public class ContourFrameDecorator implements FrameDecorator {
 		
 		Imgproc.cvtColor(input, hsv, Imgproc.COLOR_BGR2HSV);
 
-		Core.inRange(hsv, new Scalar(lowerRange, 50, 50), new Scalar(upperRange, 255, 255), hsv); // hsv
+		Core.inRange(hsv, new Scalar(lowerRange, 50, 20), new Scalar(upperRange, 255, 255), hsv);
 
 		// Remove noise
 		final Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(50, 50));

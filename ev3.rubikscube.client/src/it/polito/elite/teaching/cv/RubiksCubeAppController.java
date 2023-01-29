@@ -14,10 +14,10 @@ import ev3.rubikscube.controller.RubiksCuberSolverClient;
 import ev3.rubikscube.controller.frameprocessor.CubeColors;
 import ev3.rubikscube.controller.frameprocessor.FrameGrabber;
 import ev3.rubikscube.controller.frameprocessor.FrameObserver;
+import ev3.rubikscube.controller.frameprocessor.decorator.ColorHitCounter;
 import ev3.rubikscube.controller.frameprocessor.decorator.ContourFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.DottedFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.InterprettedFrameDecorator;
-import ev3.rubikscube.controller.frameprocessor.decorator.Utils;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -83,6 +83,11 @@ public class RubiksCubeAppController implements Closeable {
 	private Slider blueLow;
 	
 	@FXML
+	private Slider colorDepthLow;
+	@FXML
+	private Slider colorDepthHigh;
+	
+	@FXML
 	private Button connectButton;
 	@FXML
 	private Button cameraButton;
@@ -105,7 +110,7 @@ public class RubiksCubeAppController implements Closeable {
 	
 
 	private Runnable frameGrabber;
-
+	
 	private InterprettedFrameDecorator decorator = new InterprettedFrameDecorator(lowerRanges, upperRanges);
 	
 	@FXML
@@ -156,11 +161,14 @@ public class RubiksCubeAppController implements Closeable {
 	
 	@FXML
 	protected void readColors() {
+		final ColorHitCounter colorHitCounter = decorator.readColors();
+		
 		final int middleFaceIndex = 4;
-		final RubiksCubeColors side = decorator.getColor(middleFaceIndex);
+		
+		final RubiksCubeColors side = colorHitCounter.get(middleFaceIndex);
 		final String sideCode = colorCoding.get(side);
-		for (int i = 0; i < Utils.NUMBER_OF_POINTS; i++) {
-			final RubiksCubeColors color = decorator.getColor(i);
+		for (int i = 0; i < ColorHitCounter.NUMBER_OF_POINTS; i++) {
+			final RubiksCubeColors color = colorHitCounter.get(i);
 			try {
 				this.kubeColors.get(sideCode + (i + 1)).setColor(color);	
 			} catch (Exception e) {
@@ -168,7 +176,7 @@ public class RubiksCubeAppController implements Closeable {
 				e.printStackTrace();
 			}
 		}
-		decorator.resetCounters();
+		decorator.resetColors();
 	}
 	
 	@FXML

@@ -15,7 +15,7 @@ public class DottedFrameDecorator implements FrameDecorator {
 
 	@Override
 	public Mat decorate(Mat input) {
-		return createFrameWithDots(input, Utils.calcPointsOfInterest(input.width(), input.height()));
+		return createFrameWithDots(input, ColorHitCounter.calcPointsOfInterest(input.width(), input.height()));
 	}
 
 	private Mat createFrameWithDots(Mat originalFrame, List<Point> pointsOfInterest) {

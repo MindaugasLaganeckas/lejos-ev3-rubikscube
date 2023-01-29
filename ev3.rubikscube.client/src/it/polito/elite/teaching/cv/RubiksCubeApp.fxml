@@ -133,12 +133,13 @@
                         <VBox prefHeight="387.0" prefWidth="408.0">
                            <children>
                               <Label text="Red" />
-                                    <Slider fx:id="redLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#redLowChanged" onMouseReleased="#redLowChanged" showTickLabels="true" value="0">
+                              		<!-- https://stackoverflow.com/questions/51229126/how-to-find-the-red-color-regions-using-opencv -->
+                                    <Slider fx:id="redLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#redLowChanged" onMouseReleased="#redLowChanged" showTickLabels="true" value="170">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
                                     </Slider>
-                                    <Slider fx:id="redHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#redHighChanged" onMouseReleased="#redHighChanged" showTickLabels="true" value="10">
+                                    <Slider fx:id="redHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#redHighChanged" onMouseReleased="#redHighChanged" showTickLabels="true" value="185">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
@@ -149,12 +150,12 @@
                                        </VBox.margin>
                                     </Separator>
                                     <Label text="Orange" />
-                                    <Slider fx:id="orangeLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#orangeLowChanged" onMouseReleased="#orangeLowChanged" showTickLabels="true" value="10">
+                                    <Slider fx:id="orangeLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#orangeLowChanged" onMouseReleased="#orangeLowChanged" showTickLabels="true" value="10">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
                                     </Slider>
-                                    <Slider fx:id="orangeHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#orangeHighChanged" onMouseReleased="#orangeHighChanged" showTickLabels="true" value="30">
+                                    <Slider fx:id="orangeHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#orangeHighChanged" onMouseReleased="#orangeHighChanged" showTickLabels="true" value="30">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
@@ -165,12 +166,12 @@
                                        </VBox.margin>
                                     </Separator>
                                     <Label text="Yellow" />
-                                    <Slider fx:id="yellowLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#yellowLowChanged" onMouseReleased="#yellowLowChanged" showTickLabels="true" value="30">
+                                    <Slider fx:id="yellowLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#yellowLowChanged" onMouseReleased="#yellowLowChanged" showTickLabels="true" value="30">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
                                     </Slider>
-                                    <Slider fx:id="yellowHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#yellowHighChanged" onMouseReleased="#yellowHighChanged" showTickLabels="true" value="40">
+                                    <Slider fx:id="yellowHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#yellowHighChanged" onMouseReleased="#yellowHighChanged" showTickLabels="true" value="40">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
@@ -181,12 +182,12 @@
                                        </VBox.margin>
                                     </Separator>
                                     <Label text="Green" />
-                                    <Slider fx:id="greenLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#greenLowChanged" onMouseReleased="#greenLowChanged" showTickLabels="true" value="70">
+                                    <Slider fx:id="greenLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#greenLowChanged" onMouseReleased="#greenLowChanged" showTickLabels="true" value="70">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
                                     </Slider>
-                                    <Slider fx:id="greenHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#greenHighChanged" onMouseReleased="#greenHighChanged" showTickLabels="true" value="80">
+                                    <Slider fx:id="greenHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#greenHighChanged" onMouseReleased="#greenHighChanged" showTickLabels="true" value="80">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
@@ -197,12 +198,12 @@
                                        </VBox.margin>
                                     </Separator>
                                     <Label text="Blue" />
-                                    <Slider fx:id="blueLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#blueLowChanged" onMouseReleased="#blueLowChanged" showTickLabels="true" value="100">
+                                    <Slider fx:id="blueLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#blueLowChanged" onMouseReleased="#blueLowChanged" showTickLabels="true" value="100">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
                                     </Slider>
-                                    <Slider fx:id="blueHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#blueHighChanged" onMouseReleased="#blueHighChanged" showTickLabels="true" value="110">
+                                    <Slider fx:id="blueHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#blueHighChanged" onMouseReleased="#blueHighChanged" showTickLabels="true" value="110">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
@@ -217,11 +218,12 @@
     </SplitPane>
     <HBox id="HBox" alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="NEVER">
       <children>
-                  <Group fx:id="cubeMapGroup">
-                     <children>
-            			<TilePane fx:id="cubeMap" prefColumns="12" prefHeight="577.0" prefRows="9" prefTileHeight="50.0" prefTileWidth="50.0" prefWidth="758.0" />
-                     </children>
-                  </Group>
+          <Group fx:id="cubeMapGroup">
+             <children>
+    			<TilePane fx:id="cubeMap" prefColumns="12" prefHeight="577.0" prefRows="9" prefTileHeight="50.0" prefTileWidth="50.0" prefWidth="758.0" />
+             </children>
+          </Group>
+          
       </children>
       <padding>
         <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
