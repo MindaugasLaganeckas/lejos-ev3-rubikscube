@@ -41,6 +41,16 @@
                                     <Insets top="10.0" />
                                  </VBox.margin>
                               </Label>
+                              <Label fx:id="connectionStatus1" text="Camera index">
+                                 <VBox.margin>
+                                    <Insets top="10.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <ComboBox prefWidth="150.0" promptText="1">
+                                 <VBox.margin>
+                                    <Insets top="10.0" />
+                                 </VBox.margin>
+                              </ComboBox>
                         <Button fx:id="cameraButton" alignment="CENTER" disable="false" onAction="#startCamera" text="Start camera">
                                  <VBox.margin>
                                     <Insets top="10.0" />
@@ -62,6 +72,22 @@
                                     <Insets top="10.0" />
                                  </VBox.margin>
                               </Button>
+                              <Button fx:id="turnRubiksCube" alignment="CENTER" disable="false" onAction="#turnRubiksCube" text="Turn Rubiks cube">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                                 <VBox.margin>
+                                    <Insets top="10.0" />
+                                 </VBox.margin>
+                              </Button>
+                              <Button fx:id="readColors" alignment="CENTER" disable="false" onAction="#readColors" text="Read colors">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                                 <VBox.margin>
+                                    <Insets top="10.0" />
+                                 </VBox.margin>
+                              </Button>                             
                      </children>
                   </VBox>
           </children>
@@ -73,26 +99,109 @@
                         <VBox prefHeight="200.0" prefWidth="100.0">
                            <children>
                               <Label text="Camera view" />
-                              <ImageView fx:id="originalFrame" />
+                              <ImageView fx:id="originalFrame">
+								<VBox.margin>
+                                  <Insets top="10.0" />
+                               </VBox.margin>
+                                </ImageView>
                            </children>
                         </VBox>
                      </children>
                   </AnchorPane>
                 <AnchorPane maxWidth="-Infinity" minWidth="-Infinity" prefWidth="500.0">
                      <children>
-                        <VBox prefHeight="200.0" prefWidth="100.0">
+                        <VBox prefHeight="500.0" prefWidth="100.0">
+                        
                            <children>
-                              <Label text="Computer vision view" />
-                              <ImageView fx:id="processedFrame" />
+								<Label prefHeight="15.0" prefWidth="157.0" text="Computer vision view" />
+								<ImageView fx:id="processedFrame">
+									<VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                </ImageView>
                            </children>
                         </VBox>
                      </children>
                   </AnchorPane>
                   <AnchorPane maxWidth="-Infinity" minWidth="-Infinity">
                      <children>
-                        <VBox prefHeight="200.0" prefWidth="100.0">
+                        <VBox prefHeight="387.0" prefWidth="408.0">
                            <children>
-                              <Label text="Details" />
+                              <Label text="Red" />
+                                    <Slider fx:id="redLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#redLowChanged" onMouseReleased="#redLowChanged" showTickLabels="true" value="0">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Slider>
+                                    <Slider fx:id="redHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#redHighChanged" onMouseReleased="#redHighChanged" showTickLabels="true" value="10">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Slider>
+                                    <Separator prefWidth="200.0">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Separator>
+                                    <Label text="Orange" />
+                                    <Slider fx:id="orangeLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#orangeLowChanged" onMouseReleased="#orangeLowChanged" showTickLabels="true" value="10">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Slider>
+                                    <Slider fx:id="orangeHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#orangeHighChanged" onMouseReleased="#orangeHighChanged" showTickLabels="true" value="30">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Slider>
+                                    <Separator prefWidth="200.0">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Separator>
+                                    <Label text="Yellow" />
+                                    <Slider fx:id="yellowLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#yellowLowChanged" onMouseReleased="#yellowLowChanged" showTickLabels="true" value="30">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Slider>
+                                    <Slider fx:id="yellowHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#yellowHighChanged" onMouseReleased="#yellowHighChanged" showTickLabels="true" value="40">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Slider>                                    
+                                    <Separator prefWidth="200.0">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Separator>
+                                    <Label text="Green" />
+                                    <Slider fx:id="greenLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#greenLowChanged" onMouseReleased="#greenLowChanged" showTickLabels="true" value="70">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Slider>
+                                    <Slider fx:id="greenHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#greenHighChanged" onMouseReleased="#greenHighChanged" showTickLabels="true" value="80">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Slider>
+                                    <Separator prefWidth="200.0">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Separator>
+                                    <Label text="Blue" />
+                                    <Slider fx:id="blueLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#blueLowChanged" onMouseReleased="#blueLowChanged" showTickLabels="true" value="100">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Slider>
+                                    <Slider fx:id="blueHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="120" min="0" onKeyReleased="#blueHighChanged" onMouseReleased="#blueHighChanged" showTickLabels="true" value="110">
+                                       <VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                    </Slider>
                            </children>
                         </VBox>
                      </children>

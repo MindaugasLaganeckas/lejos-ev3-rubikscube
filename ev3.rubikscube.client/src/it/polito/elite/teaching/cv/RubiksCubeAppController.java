@@ -16,22 +16,20 @@ import ev3.rubikscube.controller.frameprocessor.FrameGrabber;
 import ev3.rubikscube.controller.frameprocessor.FrameObserver;
 import ev3.rubikscube.controller.frameprocessor.decorator.DottedFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.InterprettedFrameDecorator;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.Event;
-import javafx.event.EventHandler;
+import ev3.rubikscube.controller.frameprocessor.decorator.Utils;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
-import javafx.scene.shape.Rectangle;
 
 public class RubiksCubeAppController implements Closeable {
 
 	private static final int VIDEO_DEVICE_INDEX = 0;
+	
+	private int[] lowerRanges = new int[] { 0, 10, 30, 70, 100 }; // the last color is white
+	private int[] upperRanges = new int[] { 10, 30, 40, 80, 110 };
 	
 	private static final int SERVER_PORT = 3333;
 	
@@ -62,6 +60,28 @@ public class RubiksCubeAppController implements Closeable {
 	private String solutionStr;
 	
 	@FXML
+	private Slider redHigh;
+	@FXML
+	private Slider orangeHigh;
+	@FXML
+	private Slider yellowHigh;
+	@FXML
+	private Slider greenHigh;
+	@FXML
+	private Slider blueHigh;
+	
+	@FXML
+	private Slider redLow;
+	@FXML
+	private Slider orangeLow;
+	@FXML
+	private Slider yellowLow;
+	@FXML
+	private Slider greenLow;
+	@FXML
+	private Slider blueLow;
+	
+	@FXML
 	private Button connectButton;
 	@FXML
 	private Button cameraButton;
@@ -80,14 +100,73 @@ public class RubiksCubeAppController implements Closeable {
 	// a timer for acquiring the video stream
 	private ScheduledExecutorService timer;
 	
-	/*@FXML
-	private Slider redUpper;
-	@FXML
-	private Slider redLower;*/
-	
+
 	private Runnable frameGrabber;
 
-	private InterprettedFrameDecorator decorator = new InterprettedFrameDecorator();
+	private InterprettedFrameDecorator decorator = new InterprettedFrameDecorator(lowerRanges, upperRanges);
+	
+	@FXML
+	protected void redHighChanged() {
+		upperRanges[CubeColors.RED.ordinal()] = (int)redHigh.getValue();
+	}
+	@FXML
+	protected void orangeHighChanged() {
+		upperRanges[CubeColors.ORANGE.ordinal()] = (int)orangeHigh.getValue();
+	}
+	@FXML
+	protected void yellowHighChanged() {
+		upperRanges[CubeColors.YELLOW.ordinal()] = (int)yellowHigh.getValue();
+	}
+	@FXML
+	protected void greenHighChanged() {
+		upperRanges[CubeColors.GREEN.ordinal()] = (int)greenHigh.getValue();
+	}
+	@FXML
+	protected void blueHighChanged() {
+		upperRanges[CubeColors.BLUE.ordinal()] = (int)blueHigh.getValue();
+	}
+	@FXML
+	protected void redLowChanged() {
+		lowerRanges[CubeColors.RED.ordinal()] = (int)redLow.getValue();
+	}
+	@FXML
+	protected void orangeLowChanged() {
+		lowerRanges[CubeColors.ORANGE.ordinal()] = (int)orangeLow.getValue();
+	}
+	@FXML
+	protected void yellowLowChanged() {
+		lowerRanges[CubeColors.YELLOW.ordinal()] = (int)yellowLow.getValue();
+	}
+	@FXML
+	protected void greenLowChanged() {
+		lowerRanges[CubeColors.GREEN.ordinal()] = (int)greenLow.getValue();
+	}
+	@FXML
+	protected void blueLowChanged() {
+		lowerRanges[CubeColors.BLUE.ordinal()] = (int)blueLow.getValue();
+	}
+	
+	@FXML
+	protected void turnRubiksCube() {
+		System.out.println("Turn");
+	}
+	
+	@FXML
+	protected void readColors() {
+		final int middleFaceIndex = 4;
+		final RubiksCubeColors side = decorator.getColor(middleFaceIndex);
+		final String sideCode = colorCoding.get(side);
+		for (int i = 0; i < Utils.NUMBER_OF_POINTS; i++) {
+			final RubiksCubeColors color = decorator.getColor(i);
+			try {
+				this.kubeColors.get(sideCode + (i + 1)).setColor(color);	
+			} catch (Exception e) {
+				System.out.println(sideCode + i);
+				e.printStackTrace();
+			}
+		}
+		decorator.resetCounters();
+	}
 	
 	@FXML
 	protected void connect() {

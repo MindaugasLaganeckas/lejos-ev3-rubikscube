@@ -8,8 +8,7 @@ public enum CubeColors {
 	ORANGE   (new Scalar(0, 100, 255)),
 	YELLOW   (new Scalar(0, 255, 255)),
 	GREEN    (new Scalar(0, 255, 0)),
-	BLUE     (new Scalar(255, 0, 0)),
-	WHITE    (new Scalar(255, 255, 255));
+	BLUE     (new Scalar(255, 0, 0));
 	
 	private Scalar color;
 	private CubeColors(Scalar color) {

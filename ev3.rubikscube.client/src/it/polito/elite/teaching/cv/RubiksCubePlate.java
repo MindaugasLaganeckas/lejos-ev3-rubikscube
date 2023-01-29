@@ -43,8 +43,11 @@ public class RubiksCubePlate extends StackPane {
 		return RubiksCubeColors.values()[currentColor];
 	}
 	public void setAndLockColor(final RubiksCubeColors color) {
+		setColor(color);
+		colorIsLocked = true;
+	}
+	public void setColor(final RubiksCubeColors color) {
 		currentColor = color.ordinal();
 		updateColor();
-		colorIsLocked = true;
 	}
 }
