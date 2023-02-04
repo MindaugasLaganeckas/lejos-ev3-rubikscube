@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import ev3.rubikscube.controller.Client;
 import ev3.rubikscube.controller.RubiksCuberSolverClient;
@@ -29,8 +30,6 @@ public class RubiksCubeAppController implements Closeable {
 
 	private static final int VIDEO_DEVICE_INDEX = 0;
 	
-	private int[] lowerRanges = new int[] { 0, 10, 30, 70, 100 }; // the last color is white
-	private int[] upperRanges = new int[] { 10, 30, 40, 80, 110 };
 	
 	private static final int SERVER_PORT = 3333;
 	
@@ -108,50 +107,64 @@ public class RubiksCubeAppController implements Closeable {
 	// a timer for acquiring the video stream
 	private ScheduledExecutorService timer;
 	
-
 	private Runnable frameGrabber;
 	
-	private InterprettedFrameDecorator decorator = new InterprettedFrameDecorator(lowerRanges, upperRanges);
+	private final AtomicIntegerArray lowerRanges = new AtomicIntegerArray(5);
+	private final AtomicIntegerArray upperRanges = new AtomicIntegerArray(5);
+	
+	public void initRanges() {
+		lowerRanges.set(0, (int)redLow.getValue());
+		lowerRanges.set(1, (int)orangeLow.getValue());
+		lowerRanges.set(2, (int)yellowLow.getValue());
+		lowerRanges.set(3, (int)greenLow.getValue());
+		lowerRanges.set(4, (int)blueLow.getValue());
+		
+		upperRanges.set(0, (int)redHigh.getValue());
+		upperRanges.set(1, (int)orangeHigh.getValue());
+		upperRanges.set(2, (int)yellowHigh.getValue());
+		upperRanges.set(3, (int)greenHigh.getValue());
+		upperRanges.set(4, (int)blueHigh.getValue());
+	}
 	
 	@FXML
 	protected void redHighChanged() {
-		upperRanges[CubeColors.RED.ordinal()] = (int)redHigh.getValue();
+		upperRanges.set(CubeColors.RED.ordinal(), (int)redHigh.getValue());
 	}
 	@FXML
 	protected void orangeHighChanged() {
-		upperRanges[CubeColors.ORANGE.ordinal()] = (int)orangeHigh.getValue();
+		upperRanges.set(CubeColors.ORANGE.ordinal(), (int)orangeHigh.getValue());
 	}
 	@FXML
 	protected void yellowHighChanged() {
-		upperRanges[CubeColors.YELLOW.ordinal()] = (int)yellowHigh.getValue();
+		upperRanges.set(CubeColors.YELLOW.ordinal(), (int)yellowHigh.getValue());
 	}
 	@FXML
 	protected void greenHighChanged() {
-		upperRanges[CubeColors.GREEN.ordinal()] = (int)greenHigh.getValue();
+		upperRanges.set(CubeColors.GREEN.ordinal(), (int)greenHigh.getValue());
 	}
 	@FXML
 	protected void blueHighChanged() {
-		upperRanges[CubeColors.BLUE.ordinal()] = (int)blueHigh.getValue();
+		upperRanges.set(CubeColors.BLUE.ordinal(), (int)blueHigh.getValue());
 	}
 	@FXML
 	protected void redLowChanged() {
-		lowerRanges[CubeColors.RED.ordinal()] = (int)redLow.getValue();
+		lowerRanges.set(CubeColors.RED.ordinal(), (int)redLow.getValue());
 	}
 	@FXML
 	protected void orangeLowChanged() {
-		lowerRanges[CubeColors.ORANGE.ordinal()] = (int)orangeLow.getValue();
+		lowerRanges.set(CubeColors.ORANGE.ordinal(), (int)orangeLow.getValue());
 	}
 	@FXML
 	protected void yellowLowChanged() {
-		lowerRanges[CubeColors.YELLOW.ordinal()] = (int)yellowLow.getValue();
+		lowerRanges.set(CubeColors.YELLOW.ordinal(), (int)yellowLow.getValue());
 	}
 	@FXML
 	protected void greenLowChanged() {
-		lowerRanges[CubeColors.GREEN.ordinal()] = (int)greenLow.getValue();
+		lowerRanges.set(CubeColors.GREEN.ordinal(), (int)greenLow.getValue());
 	}
 	@FXML
 	protected void blueLowChanged() {
-		lowerRanges[CubeColors.BLUE.ordinal()] = (int)blueLow.getValue();
+		lowerRanges.set(CubeColors.BLUE.ordinal(), (int)blueLow.getValue());
 	}
 	
 	@FXML
@@ -215,6 +228,8 @@ public class RubiksCubeAppController implements Closeable {
 	 * The action triggered by pushing the button on the GUI
 	 * @throws IOException 
 	 */
+	private InterprettedFrameDecorator decorator;
+	
 	@FXML
 	protected void startCamera() throws IOException {
 		// set a fixed width for the frame
@@ -231,6 +246,8 @@ public class RubiksCubeAppController implements Closeable {
 		contourView.setFitWidth(380);
 		// preserve image ratio
 		contourView.setPreserveRatio(true);
+		
+		decorator = new InterprettedFrameDecorator(lowerRanges, upperRanges);
 		
 		// grab a frame every 33 ms (30 frames/sec)
 		this.frameGrabber = new FrameGrabber( 

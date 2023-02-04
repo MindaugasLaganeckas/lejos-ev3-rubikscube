@@ -3,6 +3,7 @@ package ev3.rubikscube.controller.frameprocessor.decorator;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -19,11 +20,8 @@ import ev3.rubikscube.controller.frameprocessor.FrameDecorator;
 
 public class InterprettedFrameDecorator implements FrameDecorator {
 
-	/**
-	 * TODO Change to atomic integer
-	 */
-	private final int[] lowerRanges;
-	private final int[] upperRanges;
+	private final AtomicIntegerArray lowerRanges;
+	private final AtomicIntegerArray upperRanges;
 	
 	private ColorHitCounter colorHitCounter;
 	
@@ -31,7 +29,7 @@ public class InterprettedFrameDecorator implements FrameDecorator {
 		this.colorHitCounter = new ColorHitCounter();
 	}
 	
-	public InterprettedFrameDecorator(final int[] lowerRanges, final int[] upperRanges) {
+	public InterprettedFrameDecorator(final AtomicIntegerArray lowerRanges, final AtomicIntegerArray upperRanges) {
 		this.lowerRanges = lowerRanges;
 		this.upperRanges = upperRanges;
 		resetColors();
@@ -42,13 +40,13 @@ public class InterprettedFrameDecorator implements FrameDecorator {
 		final List<Point> pointsForColorTest = ColorHitCounter.calcPointsOfInterest(input.width(), input.height());
 
 		final Mat dest = Mat.zeros(input.size(), CvType.CV_8UC3);
-		if (!(lowerRanges.length == upperRanges.length && upperRanges.length == CubeColors.values().length)) {
+		if (!(lowerRanges.length() == upperRanges.length() && upperRanges.length() == CubeColors.values().length)) {
 			throw new IllegalArgumentException();
 		}
 
 		for (int i = 0; i < CubeColors.values().length; i++) {
-			final int lowerRange = lowerRanges[i];
-			final int upperRange = upperRanges[i];
+			final int lowerRange = lowerRanges.get(i);
+			final int upperRange = upperRanges.get(i);
 			final CubeColors color = CubeColors.values()[i];
 			final List<MatOfPoint> contoursOfColor = findContoursWithinRange(input, lowerRange, upperRange);
 			final List<Rect> rectsOfColor = new LinkedList<>();

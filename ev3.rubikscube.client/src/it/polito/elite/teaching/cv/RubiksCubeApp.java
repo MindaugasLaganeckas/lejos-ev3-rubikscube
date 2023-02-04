@@ -67,6 +67,7 @@ public class RubiksCubeApp extends Application
 			// get the controller
 			final RubiksCubeAppController controller = loader.getController();
 			controller.setRectangles(drawCubeMap);
+			controller.initRanges();
 			
 			// set the proper behavior on closing the application
 			primaryStage.setOnCloseRequest((new EventHandler<WindowEvent>() {

@@ -2,6 +2,7 @@ package ev3.rubikscube.controller.frameprocessor.decorator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -16,10 +17,10 @@ import ev3.rubikscube.controller.frameprocessor.FrameDecorator;
 
 public class ContourFrameDecorator implements FrameDecorator {
 
-	private final int[] lowerRanges;
-	private final int[] upperRanges;
-
-	public ContourFrameDecorator(final int[] lowerRanges, final int[] upperRanges) {
+	private final AtomicIntegerArray lowerRanges;
+	private final AtomicIntegerArray upperRanges;
+	
+	public ContourFrameDecorator(final AtomicIntegerArray lowerRanges, final AtomicIntegerArray upperRanges) {
 		this.lowerRanges = lowerRanges;
 		this.upperRanges = upperRanges;
 	}
@@ -27,13 +28,13 @@ public class ContourFrameDecorator implements FrameDecorator {
 	@Override
 	public Mat decorate(Mat input) {
 		final Mat dest = Mat.zeros(input.size(), CvType.CV_8UC3);
-		if (!(lowerRanges.length == upperRanges.length && upperRanges.length == CubeColors.values().length)) {
+		if (!(lowerRanges.length() == upperRanges.length() && upperRanges.length() == CubeColors.values().length)) {
 			throw new IllegalArgumentException();
 		}
 
 		for (int i = 0; i < CubeColors.values().length; i++) {
-			final int lowerRange = lowerRanges[i];
-			final int upperRange = upperRanges[i];
+			final int lowerRange = lowerRanges.get(i);
+			final int upperRange = upperRanges.get(i);
 			final CubeColors color = CubeColors.values()[i];
 			final List<MatOfPoint> contoursOfColor = findContoursWithinRange(input, lowerRange, upperRange);
 			Imgproc.drawContours(dest, contoursOfColor, -1, color.getColor());
@@ -61,10 +62,10 @@ public class ContourFrameDecorator implements FrameDecorator {
 	}
 
 	public void setLower(CubeColors color, int value) {
-		lowerRanges[color.ordinal()] = value;
+		lowerRanges.set(color.ordinal(), value);
 	}
 
 	public void setUpper(CubeColors color, int value) {
-		upperRanges[color.ordinal()] = value;
+		upperRanges.set(color.ordinal(), value);
 	}
 }
