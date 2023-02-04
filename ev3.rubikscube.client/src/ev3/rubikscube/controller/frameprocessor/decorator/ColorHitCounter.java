@@ -1,5 +1,6 @@
 package ev3.rubikscube.controller.frameprocessor.decorator;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicIntegerArray;
@@ -40,7 +41,8 @@ public class ColorHitCounter {
 		if (pointsOfInterest.size() != NUMBER_OF_POINTS) {
 			throw new IllegalArgumentException();
 		}
-		
+		// front face position when filmed with the camera
+		Collections.reverse(pointsOfInterest);
 		return pointsOfInterest;
 	}
 	
