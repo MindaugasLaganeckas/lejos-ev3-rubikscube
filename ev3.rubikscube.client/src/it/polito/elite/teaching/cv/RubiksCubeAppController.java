@@ -113,60 +113,22 @@ public class RubiksCubeAppController implements Closeable {
 	private final AtomicIntegerArray upperRanges = new AtomicIntegerArray(5);
 	
 	public void initRanges() {
-		lowerRanges.set(0, (int)redLow.getValue());
-		lowerRanges.set(1, (int)orangeLow.getValue());
-		lowerRanges.set(2, (int)yellowLow.getValue());
-		lowerRanges.set(3, (int)greenLow.getValue());
-		lowerRanges.set(4, (int)blueLow.getValue());
+		lowerRanges.set(CubeColors.RED.ordinal(), (int)redLow.getValue());
+		lowerRanges.set(CubeColors.ORANGE.ordinal(), (int)orangeLow.getValue());
+		lowerRanges.set(CubeColors.YELLOW.ordinal(), (int)yellowLow.getValue());
+		lowerRanges.set(CubeColors.GREEN.ordinal(), (int)greenLow.getValue());
+		lowerRanges.set(CubeColors.BLUE.ordinal(), (int)blueLow.getValue());
 		
-		upperRanges.set(0, (int)redHigh.getValue());
-		upperRanges.set(1, (int)orangeHigh.getValue());
-		upperRanges.set(2, (int)yellowHigh.getValue());
-		upperRanges.set(3, (int)greenHigh.getValue());
-		upperRanges.set(4, (int)blueHigh.getValue());
-	}
-	
-	@FXML
-	protected void redHighChanged() {
 		upperRanges.set(CubeColors.RED.ordinal(), (int)redHigh.getValue());
-	}
-	@FXML
-	protected void orangeHighChanged() {
 		upperRanges.set(CubeColors.ORANGE.ordinal(), (int)orangeHigh.getValue());
-	}
-	@FXML
-	protected void yellowHighChanged() {
 		upperRanges.set(CubeColors.YELLOW.ordinal(), (int)yellowHigh.getValue());
-	}
-	@FXML
-	protected void greenHighChanged() {
 		upperRanges.set(CubeColors.GREEN.ordinal(), (int)greenHigh.getValue());
-	}
-	@FXML
-	protected void blueHighChanged() {
 		upperRanges.set(CubeColors.BLUE.ordinal(), (int)blueHigh.getValue());
 	}
 	@FXML
-	protected void redLowChanged() {
-		lowerRanges.set(CubeColors.RED.ordinal(), (int)redLow.getValue());
+	protected void rangesChanged() {
+		initRanges();
 	}
-	@FXML
-	protected void orangeLowChanged() {
-		lowerRanges.set(CubeColors.ORANGE.ordinal(), (int)orangeLow.getValue());
-	}
-	@FXML
-	protected void yellowLowChanged() {
-		lowerRanges.set(CubeColors.YELLOW.ordinal(), (int)yellowLow.getValue());
-	}
-	@FXML
-	protected void greenLowChanged() {
-		lowerRanges.set(CubeColors.GREEN.ordinal(), (int)greenLow.getValue());
-	}
-	@FXML
-	protected void blueLowChanged() {
-		lowerRanges.set(CubeColors.BLUE.ordinal(), (int)blueLow.getValue());
-	}
-	
 	@FXML
 	protected void turnRubiksCube() {
 		System.out.println("Turn");
