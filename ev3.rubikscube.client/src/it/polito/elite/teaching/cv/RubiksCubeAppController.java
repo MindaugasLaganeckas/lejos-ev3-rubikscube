@@ -20,16 +20,33 @@ import ev3.rubikscube.controller.frameprocessor.decorator.ContourFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.DottedFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.InterprettedFrameDecorator;
 import javafx.fxml.FXML;
+import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.TilePane;
 
 public class RubiksCubeAppController implements Closeable {
 
 	private static final int VIDEO_DEVICE_INDEX = 0;
 	
+    private int rows = 9;
+    private int columns = 12;
+    
+    private final Map<Integer, String> plateMap = new HashMap<>() {
+		private static final long serialVersionUID = 1L;
+	{
+        put( 3, "U");
+        put(36, "L");
+        
+        put(39, "F");
+        put(42, "R");
+        
+        put(45, "B");
+        put(75, "D");
+    }};
 	
 	private static final int SERVER_PORT = 3333;
 	
@@ -50,14 +67,19 @@ public class RubiksCubeAppController implements Closeable {
     private final RubiksCuberSolverClient solverClient = new RubiksCuberSolverClient();
 	private Client client;
 	
-	public void setRectangles(final Map<String, RubiksCubePlate> kubeColors) {
-		this.kubeColors = kubeColors;
+	public void setRectangles() {
+		this.kubeColors = drawCubeMap();
 		for (final Entry<RubiksCubeColors, String> entry : colorCoding.entrySet()) {
 			kubeColors.get(entry.getValue() + "5").setAndLockColor(entry.getKey());
 		}
 	}
 	
 	private String solutionStr;
+	
+	@FXML
+	private TilePane cubeMap;
+	@FXML
+	private Group cubeMapGroup;
 	
 	@FXML
 	private Slider redHigh;
@@ -266,5 +288,32 @@ public class RubiksCubeAppController implements Closeable {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private Map<String, RubiksCubePlate> drawCubeMap() {
+		final Map<String, RubiksCubePlate> kubeColors = new HashMap<>();
+		int index = 0;
+		for (int row = 0; row < rows; row++) {
+		    for (int col = 0; col < columns; col++) {
+		    	if (plateMap.containsKey(index)) {
+		    		int littleIndex = 1;
+		    		for (int i = 0; i < 3; i++) {
+		    			for (int j = 0; j < 3; j++) {
+		    				final int x = index / columns + i;
+		    				final int y = index % columns + j;
+		    				final RubiksCubePlate plate = new RubiksCubePlate(
+		    		        		cubeMap.tileWidthProperty().intValue(), 
+		    		        		cubeMap.tileHeightProperty().intValue(), 
+		    		        		y, x, plateMap.get(index) + littleIndex);
+		    				kubeColors.put(plateMap.get(index) + littleIndex, plate);
+		    				cubeMapGroup.getChildren().add(plate);
+		    				littleIndex++;
+		    			}
+		    		}
+		    	}
+		    	index++;
+		    }
+		}
+		return kubeColors;
 	}
 }

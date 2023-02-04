@@ -1,41 +1,19 @@
 package it.polito.elite.teaching.cv;
 	
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.opencv.core.Core;
 
 import javafx.application.Application;
 import javafx.event.EventHandler;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
-import javafx.scene.Group;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.TilePane;
-import javafx.scene.layout.VBox;
-import javafx.fxml.FXMLLoader;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 public class RubiksCubeApp extends Application
-{
-    private int rows = 9;
-    private int columns = 12;
-    
-    private final Map<Integer, String> plateMap = new HashMap<>() {
-		private static final long serialVersionUID = 1L;
-	{
-        put( 3, "U");
-        put(36, "L");
-        
-        put(39, "F");
-        put(42, "R");
-        
-        put(45, "B");
-        put(75, "D");
-    }};
-    
+{    
 	@Override
 	public void start(final Stage primaryStage)
 	{
@@ -44,10 +22,6 @@ public class RubiksCubeApp extends Application
 			// load the FXML resource
 			final FXMLLoader loader = new FXMLLoader(getClass().getResource("RubiksCubeApp.fxml"));
 			final BorderPane root = (BorderPane) loader.load();
-			
-			final Group cubeMapGroup = 
-					((Group)((HBox)((VBox)root.getCenter()).getChildren().get(1)).getChildren().get(0));
-			final TilePane cubeMap = (TilePane) cubeMapGroup.getChildren().get(0);
 			
 			// set a whitesmoke background
 			root.setStyle("-fx-background-color: whitesmoke;");
@@ -58,16 +32,14 @@ public class RubiksCubeApp extends Application
 			// scene
 			primaryStage.setTitle("Robot control center");
 			primaryStage.setScene(scene);
-			
-			final Map<String, RubiksCubePlate> drawCubeMap = drawCubeMap(cubeMap, cubeMapGroup);
 
-			// show the GUI
-			primaryStage.show();
-			
 			// get the controller
 			final RubiksCubeAppController controller = loader.getController();
-			controller.setRectangles(drawCubeMap);
+			controller.setRectangles();
 			controller.initRanges();
+			
+			// show the GUI
+			primaryStage.show();
 			
 			// set the proper behavior on closing the application
 			primaryStage.setOnCloseRequest((new EventHandler<WindowEvent>() {
@@ -87,33 +59,6 @@ public class RubiksCubeApp extends Application
 		{
 			e.printStackTrace();
 		}
-	}
-
-	private Map<String, RubiksCubePlate> drawCubeMap(final TilePane cubeMap, final Group cubeMapGroup) {
-		final Map<String, RubiksCubePlate> kubeColors = new HashMap<>();
-		int index = 0;
-		for (int row = 0; row < rows; row++) {
-		    for (int col = 0; col < columns; col++) {
-		    	if (plateMap.containsKey(index)) {
-		    		int littleIndex = 1;
-		    		for (int i = 0; i < 3; i++) {
-		    			for (int j = 0; j < 3; j++) {
-		    				final int x = index / columns + i;
-		    				final int y = index % columns + j;
-		    				final RubiksCubePlate plate = new RubiksCubePlate(
-		    		        		cubeMap.tileWidthProperty().intValue(), 
-		    		        		cubeMap.tileHeightProperty().intValue(), 
-		    		        		y, x, plateMap.get(index) + littleIndex);
-		    				kubeColors.put(plateMap.get(index) + littleIndex, plate);
-		    				cubeMapGroup.getChildren().add(plate);
-		    				littleIndex++;
-		    			}
-		    		}
-		    	}
-		    	index++;
-		    }
-		}
-		return kubeColors;
 	}
 
 	public static void main(String[] args)
