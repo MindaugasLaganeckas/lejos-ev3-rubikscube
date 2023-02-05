@@ -1,8 +1,8 @@
 package ev3.rubikscube.controller.frameprocessor.decorator;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import org.opencv.core.Point;
@@ -15,6 +15,8 @@ public class ColorHitCounter {
 	private static final int EDGE_LENGTH = 150;
 	
 	public static final int NUMBER_OF_POINTS = 9;
+	
+	private final AtomicInteger readCounter = new AtomicInteger();
 	
 	private final AtomicIntegerArray counters = new AtomicIntegerArray(CubeColors.values().length * NUMBER_OF_POINTS);
 	
@@ -41,12 +43,16 @@ public class ColorHitCounter {
 		if (pointsOfInterest.size() != NUMBER_OF_POINTS) {
 			throw new IllegalArgumentException();
 		}
-		// front face position when filmed with the camera
-		Collections.reverse(pointsOfInterest);
+
 		return pointsOfInterest;
 	}
 	
+	public int getReadCount() {
+		return readCounter.get();
+	}
+	
 	public void inc(final CubeColors color, final int faceId) {
+		readCounter.incrementAndGet();
 		counters.getAndIncrement(faceId * CubeColors.values().length + color.ordinal());
 	}
 	

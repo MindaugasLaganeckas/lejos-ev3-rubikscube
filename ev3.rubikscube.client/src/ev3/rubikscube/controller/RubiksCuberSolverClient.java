@@ -93,13 +93,31 @@ public class RubiksCuberSolverClient {
     }
     
     public static void main(String[] args) {
+    	String scrambledCube = 
+    			  "ULRFUULBR"
+    			+ "DBDFRDRDD"
+    			+ "BRFRFLDUB"
+    			+ "LRUFDLLUL"
+    			+ "RDUULDFRF"
+    			+ "BBFBBFBLU";
+    	
+    	//ULRFUULBR
+    	//DBDFRDRDD
+    	//BRFRFLDUB
+    	//LRUFDLLUL
+    	//RDUULDFRF
+    	//BBFBBFBLU
+    	//                    U2 R2 F  L  F2 R2 F' R  F' L  U2 B2 D  R2 U' B2 R2 F  R' 
+    	
+    	// String solution = "B2 U' R  F  R2 D2 F2 R  D' B  R2 D2 B' U2 B  U2 R2 D2 F2 R2 F2";
+    	
         // String scrambledCube = "UUFUUFUUFRRRRRRRRRFFDFFDFFDDDBDDBDDBLLLLLLLLLUBBUBBUBB";
         //String scrambledCube = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB";
         // scrambledCube can also be obtained by specific moves
         //scrambledCube = Tools.fromScramble("R");
         //System.out.println(scrambledCube);
 
-        //simpleSolve(scrambledCube);
+        simpleSolve(scrambledCube);
         //outputControl(scrambledCube);
         //return findShorterSolutions(scrambledCube);
         //continueSearch(scrambledCube);

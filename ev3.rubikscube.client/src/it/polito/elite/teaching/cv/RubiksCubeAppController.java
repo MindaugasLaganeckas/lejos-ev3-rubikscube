@@ -4,7 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -51,27 +51,23 @@ public class RubiksCubeAppController implements Closeable {
 	private static final int SERVER_PORT = 3333;
 	
 	private Map<String, RubiksCubePlate> kubeColors;
-	private Map<RubiksCubeColors, String> colorCoding = new HashMap<>() {
-		private static final long serialVersionUID = 1L;
-	{
-        put(RubiksCubeColors.ORANGE, "U");
-        put(RubiksCubeColors.WHITE, "L");
-        
-        put(RubiksCubeColors.BLUE,  "F");
-        put(RubiksCubeColors.YELLOW,  "R");
-        
-        put(RubiksCubeColors.GREEN,   "B");
-        put(RubiksCubeColors.RED,    "D");
-    }};
+
+	private int currentFaceIndex = 0;
+	private char[] orderOfFacesToRead = {'B', 'U', 'F', 'D'};
+	
+	private void setNextFaceToRead() {
+		currentFaceIndex = (currentFaceIndex + 1) % orderOfFacesToRead.length;
+	}
+	
+	private char getSideName() {
+		return orderOfFacesToRead[currentFaceIndex];
+	}
 	
     private final RubiksCuberSolverClient solverClient = new RubiksCuberSolverClient();
 	private Client client;
 	
 	public void setRectangles() {
 		this.kubeColors = drawCubeMap();
-		for (final Entry<RubiksCubeColors, String> entry : colorCoding.entrySet()) {
-			kubeColors.get(entry.getValue() + "5").setAndLockColor(entry.getKey());
-		}
 	}
 	
 	private String solutionStr;
@@ -153,27 +149,48 @@ public class RubiksCubeAppController implements Closeable {
 	}
 	@FXML
 	protected void turnRubiksCube() {
-		System.out.println("Turn");
+		setNextFaceToRead();
 	}
 	
 	@FXML
-	protected void readColors() {
-		final ColorHitCounter colorHitCounter = decorator.readColors();
-		
-		final int middleFaceIndex = 4;
-		
-		final RubiksCubeColors side = colorHitCounter.get(middleFaceIndex);
-		final String sideCode = colorCoding.get(side);
-		for (int i = 0; i < ColorHitCounter.NUMBER_OF_POINTS; i++) {
-			final RubiksCubeColors color = colorHitCounter.get(i);
+	protected void readColors() throws InterruptedException {
+		CompletableFuture.runAsync(() -> {
+			System.out.println("Async call started");
+			decorator.resetColors();
 			try {
-				this.kubeColors.get(sideCode + (i + 1)).setColor(color);	
-			} catch (Exception e) {
-				System.out.println(sideCode + i);
-				e.printStackTrace();
+				Thread.sleep(500);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+				throw new RuntimeException(e1);
 			}
+			final ColorHitCounter colorHitCounter = decorator.readColors();
+			final RubiksCubeColors[] faceColors = new RubiksCubeColors[ColorHitCounter.NUMBER_OF_POINTS];
+			for (int i = 0; i < ColorHitCounter.NUMBER_OF_POINTS; i++) {
+				faceColors[i] = colorHitCounter.get(i);
+			}
+			final String sideCode = String.valueOf(getSideName());
+			for (int i = 0; i < ColorHitCounter.NUMBER_OF_POINTS; i++) {
+				try {
+					kubeColors.get(sideCode + (i + 1)).setColor(getColor(faceColors, i));	
+				} catch (Exception e) {
+					System.out.println(sideCode + i);
+					e.printStackTrace();
+				}
+			}
+			System.out.println("Async call finished");
+		});
+	}
+	
+	private RubiksCubeColors getColor(final RubiksCubeColors[] faceColors, final int index) {
+		final char sideCode = getSideName();
+		
+		// front face position when filmed with the camera
+		if (sideCode == 'F' || sideCode == 'D' || sideCode == 'U') {
+			return faceColors[ColorHitCounter.NUMBER_OF_POINTS - 1 - index];
+		} else if (sideCode == 'B') {
+			return faceColors[index];
 		}
-		decorator.resetColors();
+		return faceColors[index];
 	}
 	
 	@FXML
@@ -189,11 +206,12 @@ public class RubiksCubeAppController implements Closeable {
 	
 	@FXML
 	protected void calculateSolution() throws IOException {
+		// order is defined here ev3.rubikscube.controller.RubiksCuberSolverClient.solve(String)
 		final String[] facesInOrder = new String[] {"U", "R", "F", "D", "L", "B"};
 		final StringBuilder scrambledCube = new StringBuilder();
 		for (final String face : facesInOrder) {
 			for (int j = 1; j <= 9; j++) {
-				scrambledCube.append(colorCoding.get(kubeColors.get(face + j).getColor()));
+				scrambledCube.append(kubeColors.get(face + j).getColor().toString().charAt(0));
 			}
 		}
 		System.out.println(scrambledCube);
