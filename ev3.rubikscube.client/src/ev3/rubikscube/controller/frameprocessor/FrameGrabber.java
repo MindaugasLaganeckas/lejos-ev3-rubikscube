@@ -25,7 +25,11 @@ public class FrameGrabber implements Runnable, Closeable {
 	public void run() {
 		final Mat frame = grabFrame();
 		for (final FrameObserver frameObserver : observers) {
-			frameObserver.update(frame);
+			try {
+				frameObserver.update(frame);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

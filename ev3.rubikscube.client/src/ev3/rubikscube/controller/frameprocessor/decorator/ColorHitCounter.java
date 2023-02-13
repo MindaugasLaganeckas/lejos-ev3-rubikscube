@@ -1,5 +1,7 @@
 package ev3.rubikscube.controller.frameprocessor.decorator;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,11 +14,22 @@ import it.polito.elite.teaching.cv.RubiksCubeColors;
 
 public class ColorHitCounter {
 
+	private static final int ERROR_THRESHOLD = 10;
 	private static final int EDGE_LENGTH = 150;
+	private static final int TIMES_TO_READ_BEFORE_NOTIFY = 100;
 	
 	public static final int NUMBER_OF_POINTS = 9;
+	public static final PropertyChangeEvent COLOR_READ_FINISHED = new PropertyChangeEvent(new Object(), "", new Object(), new Object());
 	
 	private final AtomicInteger readCounter = new AtomicInteger();
+	
+	private final PropertyChangeListener colorReadListener;
+	
+	public ColorHitCounter(final PropertyChangeListener colorReadListener) {
+		this.colorReadListener = colorReadListener;
+	}
+	
+	private boolean read = true;
 	
 	private final AtomicIntegerArray counters = new AtomicIntegerArray(CubeColors.values().length * NUMBER_OF_POINTS);
 	
@@ -52,8 +65,14 @@ public class ColorHitCounter {
 	}
 	
 	public void inc(final CubeColors color, final int faceId) {
-		readCounter.incrementAndGet();
-		counters.getAndIncrement(faceId * CubeColors.values().length + color.ordinal());
+		if (read) {
+			final int reads = readCounter.incrementAndGet();
+			counters.getAndIncrement(faceId * CubeColors.values().length + color.ordinal());
+			if (reads == TIMES_TO_READ_BEFORE_NOTIFY) {
+				colorReadListener.propertyChange(COLOR_READ_FINISHED);
+				read = false;
+			}
+		}
 	}
 	
 	public RubiksCubeColors get(final int faceId) {
@@ -67,7 +86,7 @@ public class ColorHitCounter {
 				colorIndex = i;
 			}
 		}
-		if (max < 10) {
+		if (max < ERROR_THRESHOLD) {
 			return RubiksCubeColors.WHITE;
 		}
 		return RubiksCubeColors.values()[colorIndex];

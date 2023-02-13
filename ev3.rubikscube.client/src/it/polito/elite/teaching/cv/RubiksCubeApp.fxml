@@ -80,7 +80,7 @@
                                     <Insets top="10.0" />
                                  </VBox.margin>
                               </Button>
-                              <Button fx:id="readColors" alignment="CENTER" disable="false" onAction="#readColors" text="Read colors">
+                              <Button fx:id="readColorsButton" alignment="CENTER" disable="false" onAction="#readColors" text="Read colors">
                                  <opaqueInsets>
                                     <Insets />
                                  </opaqueInsets>

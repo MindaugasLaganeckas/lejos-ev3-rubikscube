@@ -1,10 +1,11 @@
 package it.polito.elite.teaching.cv;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -28,12 +29,14 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.TilePane;
 
-public class RubiksCubeAppController implements Closeable {
+public class RubiksCubeAppController implements Closeable, PropertyChangeListener {
 
 	private static final int VIDEO_DEVICE_INDEX = 0;
 	
     private int rows = 9;
     private int columns = 12;
+    
+    private final RubiksCubeAppController me = this;
     
     private final Map<Integer, String> plateMap = new HashMap<>() {
 		private static final long serialVersionUID = 1L;
@@ -58,6 +61,8 @@ public class RubiksCubeAppController implements Closeable {
 	private void setNextFaceToRead() {
 		currentFaceIndex = (currentFaceIndex + 1) % orderOfFacesToRead.length;
 	}
+	
+	private ColorHitCounter colorHitCounter;
 	
 	private char getSideName() {
 		return orderOfFacesToRead[currentFaceIndex];
@@ -109,7 +114,7 @@ public class RubiksCubeAppController implements Closeable {
 	@FXML
 	private Button cameraButton;
 	@FXML
-	private Button colorsButton;
+	private Button readColorsButton;
 	@FXML
 	private ImageView originalFrame;
 	@FXML
@@ -150,35 +155,6 @@ public class RubiksCubeAppController implements Closeable {
 	@FXML
 	protected void turnRubiksCube() {
 		setNextFaceToRead();
-	}
-	
-	@FXML
-	protected void readColors() throws InterruptedException {
-		CompletableFuture.runAsync(() -> {
-			System.out.println("Async call started");
-			decorator.resetColors();
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e1) {
-				e1.printStackTrace();
-				throw new RuntimeException(e1);
-			}
-			final ColorHitCounter colorHitCounter = decorator.readColors();
-			final RubiksCubeColors[] faceColors = new RubiksCubeColors[ColorHitCounter.NUMBER_OF_POINTS];
-			for (int i = 0; i < ColorHitCounter.NUMBER_OF_POINTS; i++) {
-				faceColors[i] = colorHitCounter.get(i);
-			}
-			final String sideCode = String.valueOf(getSideName());
-			for (int i = 0; i < ColorHitCounter.NUMBER_OF_POINTS; i++) {
-				try {
-					kubeColors.get(sideCode + (i + 1)).setColor(getColor(faceColors, i));	
-				} catch (Exception e) {
-					System.out.println(sideCode + i);
-					e.printStackTrace();
-				}
-			}
-			System.out.println("Async call finished");
-		});
 	}
 	
 	private RubiksCubeColors getColor(final RubiksCubeColors[] faceColors, final int index) {
@@ -333,5 +309,35 @@ public class RubiksCubeAppController implements Closeable {
 		    }
 		}
 		return kubeColors;
+	}
+
+	/**
+	 * When the read is done, {@link #propertyChange(PropertyChangeEvent)} will be called by {@link #colorHitCounter}
+	 */
+	@FXML
+	protected void readColors() {
+		colorHitCounter = new ColorHitCounter(me);
+		decorator.resetColorRead(colorHitCounter);
+		this.readColorsButton.setDisable(true);
+	}
+	
+	@Override
+	public void propertyChange(PropertyChangeEvent event) {
+		if (event == ColorHitCounter.COLOR_READ_FINISHED) {
+			final RubiksCubeColors[] faceColors = new RubiksCubeColors[ColorHitCounter.NUMBER_OF_POINTS];
+			for (int i = 0; i < ColorHitCounter.NUMBER_OF_POINTS; i++) {
+				faceColors[i] = colorHitCounter.get(i);
+			}
+			final String sideCode = String.valueOf(getSideName());
+			for (int i = 0; i < ColorHitCounter.NUMBER_OF_POINTS; i++) {
+				try {
+					kubeColors.get(sideCode + (i + 1)).setColor(getColor(faceColors, i));	
+				} catch (Exception e) {
+					System.out.println(sideCode + i);
+					e.printStackTrace();
+				}
+			}
+			this.readColorsButton.setDisable(false);
+		}
 	}
 }

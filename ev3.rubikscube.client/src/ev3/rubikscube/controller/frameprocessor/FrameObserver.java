@@ -16,13 +16,8 @@ public class FrameObserver {
 	}
 	
 	void update(final Mat frame) {
-		try {
-			final Mat decoratedFrame = decorator.decorate(frame);
-			updateImageView(Utils.mat2Image(decoratedFrame));	
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
+		final Mat decoratedFrame = decorator.decorate(frame);
+		updateImageView(Utils.mat2Image(decoratedFrame));	
 	}
 	
 	private void updateImageView(Image image) {

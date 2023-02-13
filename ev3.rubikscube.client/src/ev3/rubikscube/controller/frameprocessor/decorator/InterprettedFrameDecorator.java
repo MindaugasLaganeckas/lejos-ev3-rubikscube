@@ -23,16 +23,15 @@ public class InterprettedFrameDecorator implements FrameDecorator {
 	private final AtomicIntegerArray lowerRanges;
 	private final AtomicIntegerArray upperRanges;
 	
-	private ColorHitCounter colorHitCounter;
+	private ColorHitCounter colorHitCounter = null;
 	
-	public void resetColors() {
-		this.colorHitCounter = new ColorHitCounter();
+	public synchronized void resetColorRead(ColorHitCounter colorHitCounter) {
+		this.colorHitCounter = colorHitCounter;
 	}
 	
 	public InterprettedFrameDecorator(final AtomicIntegerArray lowerRanges, final AtomicIntegerArray upperRanges) {
 		this.lowerRanges = lowerRanges;
 		this.upperRanges = upperRanges;
-		resetColors();
 	}
 	
 	@Override
@@ -53,13 +52,15 @@ public class InterprettedFrameDecorator implements FrameDecorator {
 			for (final MatOfPoint contour : contoursOfColor) {
 				rectsOfColor.add(Imgproc.boundingRect(contour));
 			}
-			for(final Rect rect : rectsOfColor) {
-				for (int j = 0; j < ColorHitCounter.NUMBER_OF_POINTS; j++) {
-					final Point p = pointsForColorTest.get(j);
-					if (rect.contains(p)) {
-						colorHitCounter.inc(color, j);
+			if (colorHitCounter != null) {
+				for(final Rect rect : rectsOfColor) {
+					for (int j = 0; j < ColorHitCounter.NUMBER_OF_POINTS; j++) {
+						final Point p = pointsForColorTest.get(j);
+						if (rect.contains(p)) {
+							colorHitCounter.inc(color, j);
+						}
 					}
-				}
+				}	
 			}
 			for (final Rect rect : rectsOfColor) {
 				Imgproc.rectangle(dest, rect, color.getColor(), -1);
@@ -93,9 +94,5 @@ public class InterprettedFrameDecorator implements FrameDecorator {
 		Imgproc.findContours(hsv, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 		
 		return contours;
-	}
-	
-	public ColorHitCounter readColors() {
-		return colorHitCounter;
 	}
 }
