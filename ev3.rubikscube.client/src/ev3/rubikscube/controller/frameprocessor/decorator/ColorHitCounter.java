@@ -14,25 +14,22 @@ import it.polito.elite.teaching.cv.RubiksCubeColors;
 
 public class ColorHitCounter {
 
-	private static final int ERROR_THRESHOLD = 10;
+	private static final int ERROR_THRESHOLD = 6; // x10% correctness
 	private static final int EDGE_LENGTH = 150;
-	private static final int TIMES_TO_READ_BEFORE_NOTIFY = 100;
-	
 	public static final int NUMBER_OF_POINTS = 9;
-	public static final PropertyChangeEvent COLOR_READ_FINISHED = new PropertyChangeEvent(new Object(), "", new Object(), new Object());
+	private static final int TIMES_TO_READ_BEFORE_NOTIFY = NUMBER_OF_POINTS * 11; // read every facet x times
+	private final ColorHitCounter me = this;
 	
 	private final AtomicInteger readCounter = new AtomicInteger();
+	private final AtomicIntegerArray counters = new AtomicIntegerArray(CubeColors.values().length * NUMBER_OF_POINTS);
+	private boolean read = true;
 	
 	private final PropertyChangeListener colorReadListener;
 	
 	public ColorHitCounter(final PropertyChangeListener colorReadListener) {
 		this.colorReadListener = colorReadListener;
 	}
-	
-	private boolean read = true;
-	
-	private final AtomicIntegerArray counters = new AtomicIntegerArray(CubeColors.values().length * NUMBER_OF_POINTS);
-	
+
 	public static List<Point> calcPointsOfInterest(final int frameWidth, final int frameHeight) {
 		return calcPointsOfInterest(frameWidth, frameHeight, EDGE_LENGTH);
 	}
@@ -69,7 +66,7 @@ public class ColorHitCounter {
 			final int reads = readCounter.incrementAndGet();
 			counters.getAndIncrement(faceId * CubeColors.values().length + color.ordinal());
 			if (reads == TIMES_TO_READ_BEFORE_NOTIFY) {
-				colorReadListener.propertyChange(COLOR_READ_FINISHED);
+				colorReadListener.propertyChange(new PropertyChangeEvent(me, "", new Object(), new Object()));
 				read = false;
 			}
 		}

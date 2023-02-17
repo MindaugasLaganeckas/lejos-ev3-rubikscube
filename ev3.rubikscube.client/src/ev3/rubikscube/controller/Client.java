@@ -42,6 +42,9 @@ public class Client implements Closeable {
 		put("U2", 17);
 		put("U'", 18);
 		
+		put("UP", 19);
+		put("DOWN", 20);
+		
 		put(COMMAND_FINISH, 100);
 	}};
 	
@@ -64,6 +67,8 @@ public class Client implements Closeable {
 		if (returnCode != 0) {
 			throw new RuntimeException("Server returned " + returnCode);
 		}
+		
+		System.in.read();
 	}
 	
 	@Override

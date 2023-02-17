@@ -47,10 +47,14 @@ public class Server {
 		put(16, "U");
 		put(17, "U2");
 		put(18, "U'");
+		
+		put(19, "UP");
+		put(20, "DOWN");
 	}};
 	
 	private static Map<String, Move> moveMap = new HashMap<>();
 
+	// if one looks at the front of the Rubiks cube ('F') 
 	private static final RegulatedMotor leftSide = Motor.A;
 	private static final RegulatedMotor rightSide = Motor.D;
 	private static final RegulatedMotor forkMotor = Motor.B;
@@ -154,6 +158,7 @@ public class Server {
 		moveMap.put("U2", new U2(up, down, f2));
 		moveMap.put("U'", new Ui(up, down, fi));
 		
+		moveMap.put("UP", up);
 		moveMap.put("DOWN", down);
 	}
 

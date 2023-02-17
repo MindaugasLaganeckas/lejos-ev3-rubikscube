@@ -64,7 +64,7 @@
                                     <Insets top="10.0" />
                                  </VBox.margin>
                               </Label>
-                              <Button fx:id="sendSolutionToRobot" alignment="CENTER" disable="false" onAction="#sendSolutionToRobot" text="Send solution to robot">
+                              <Button fx:id="sendSolutionToRobot" alignment="CENTER" disable="true" onAction="#sendSolutionToRobot" text="Send solution to robot">
                                  <opaqueInsets>
                                     <Insets />
                                  </opaqueInsets>
@@ -72,7 +72,7 @@
                                     <Insets top="10.0" />
                                  </VBox.margin>
                               </Button>
-                              <Button fx:id="turnRubiksCube" alignment="CENTER" disable="false" onAction="#turnRubiksCube" text="Turn Rubiks cube">
+                              <Button fx:id="turnRubiksCubeButton" alignment="CENTER" disable="true" onAction="#turnRubiksCube" text="Turn Rubiks cube">
                                  <opaqueInsets>
                                     <Insets />
                                  </opaqueInsets>
@@ -80,7 +80,7 @@
                                     <Insets top="10.0" />
                                  </VBox.margin>
                               </Button>
-                              <Button fx:id="readColorsButton" alignment="CENTER" disable="false" onAction="#readColors" text="Read colors">
+                              <Button fx:id="readColorsButton" alignment="CENTER" disable="true" onAction="#readColors" text="Read colors">
                                  <opaqueInsets>
                                     <Insets />
                                  </opaqueInsets>

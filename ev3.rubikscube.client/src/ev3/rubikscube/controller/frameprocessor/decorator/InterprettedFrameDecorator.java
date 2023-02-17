@@ -25,7 +25,7 @@ public class InterprettedFrameDecorator implements FrameDecorator {
 	
 	private ColorHitCounter colorHitCounter = null;
 	
-	public synchronized void resetColorRead(ColorHitCounter colorHitCounter) {
+	public synchronized void resetColorRead(final ColorHitCounter colorHitCounter) {
 		this.colorHitCounter = colorHitCounter;
 	}
 	

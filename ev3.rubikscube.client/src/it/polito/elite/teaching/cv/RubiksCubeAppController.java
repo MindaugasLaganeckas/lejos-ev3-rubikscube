@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import ev3.rubikscube.controller.Client;
+import ev3.rubikscube.controller.ColorReadController;
 import ev3.rubikscube.controller.RubiksCuberSolverClient;
 import ev3.rubikscube.controller.frameprocessor.CubeColors;
 import ev3.rubikscube.controller.frameprocessor.FrameGrabber;
@@ -37,6 +38,7 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
     private int columns = 12;
     
     private final RubiksCubeAppController me = this;
+    private ColorReadController colorReadController = null;
     
     private final Map<Integer, String> plateMap = new HashMap<>() {
 		private static final long serialVersionUID = 1L;
@@ -54,19 +56,6 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	private static final int SERVER_PORT = 3333;
 	
 	private Map<String, RubiksCubePlate> kubeColors;
-
-	private int currentFaceIndex = 0;
-	private char[] orderOfFacesToRead = {'B', 'U', 'F', 'D'};
-	
-	private void setNextFaceToRead() {
-		currentFaceIndex = (currentFaceIndex + 1) % orderOfFacesToRead.length;
-	}
-	
-	private ColorHitCounter colorHitCounter;
-	
-	private char getSideName() {
-		return orderOfFacesToRead[currentFaceIndex];
-	}
 	
     private final RubiksCuberSolverClient solverClient = new RubiksCuberSolverClient();
 	private Client client;
@@ -116,6 +105,8 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	@FXML
 	private Button readColorsButton;
 	@FXML
+	private Button turnRubiksCubeButton;
+	@FXML
 	private ImageView originalFrame;
 	@FXML
 	private ImageView processedFrame;
@@ -148,32 +139,25 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		upperRanges.set(CubeColors.GREEN.ordinal(), (int)greenHigh.getValue());
 		upperRanges.set(CubeColors.BLUE.ordinal(), (int)blueHigh.getValue());
 	}
+	
 	@FXML
 	protected void rangesChanged() {
 		initRanges();
 	}
-	@FXML
-	protected void turnRubiksCube() {
-		setNextFaceToRead();
-	}
 	
-	private RubiksCubeColors getColor(final RubiksCubeColors[] faceColors, final int index) {
-		final char sideCode = getSideName();
-		
-		// front face position when filmed with the camera
-		if (sideCode == 'F' || sideCode == 'D' || sideCode == 'U') {
-			return faceColors[ColorHitCounter.NUMBER_OF_POINTS - 1 - index];
-		} else if (sideCode == 'B') {
-			return faceColors[index];
-		}
-		return faceColors[index];
+	@FXML
+	protected void turnRubiksCube() throws IOException {
+		colorReadController.setNextFaceToRead();
 	}
 	
 	@FXML
 	protected void connect() {
 		try {
-			client = new Client(robotIp.getText(), SERVER_PORT);
+			this.client = new Client(robotIp.getText(), SERVER_PORT);
+			this.colorReadController = new ColorReadController(this.client);
 			connectionStatus.setText("Connection status: connected.");
+			readColorsButton.setDisable(false);
+			turnRubiksCubeButton.setDisable(false);
 		} catch (Exception e) {
 			connectionStatus.setText("Connection status: " + e.getMessage());
 			e.printStackTrace();
@@ -284,6 +268,28 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		}
 	}
 	
+	/**
+	 * When the read is done, {@link #propertyChange(PropertyChangeEvent)} will be called by {@link #colorHitCounter}
+	 */
+	@FXML
+	protected void readColors() {
+		final ColorHitCounter colorHitCounter = new ColorHitCounter(me);
+		decorator.resetColorRead(colorHitCounter);
+		this.readColorsButton.setDisable(true);
+	}
+	
+	@Override
+	public void propertyChange(final PropertyChangeEvent event) {
+		colorReadController.colorReadCompleted(kubeColors, (ColorHitCounter) event.getSource());
+		this.readColorsButton.setDisable(false);
+		if (colorReadController.isReadSequenceCompleted()) {
+			colorReadController.startNewReadSequence();
+		} else {
+			colorReadController.setNextFaceToRead();
+			readColors();
+		}
+	}
+	
 	private Map<String, RubiksCubePlate> drawCubeMap() {
 		final Map<String, RubiksCubePlate> kubeColors = new HashMap<>();
 		int index = 0;
@@ -309,35 +315,5 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		    }
 		}
 		return kubeColors;
-	}
-
-	/**
-	 * When the read is done, {@link #propertyChange(PropertyChangeEvent)} will be called by {@link #colorHitCounter}
-	 */
-	@FXML
-	protected void readColors() {
-		colorHitCounter = new ColorHitCounter(me);
-		decorator.resetColorRead(colorHitCounter);
-		this.readColorsButton.setDisable(true);
-	}
-	
-	@Override
-	public void propertyChange(PropertyChangeEvent event) {
-		if (event == ColorHitCounter.COLOR_READ_FINISHED) {
-			final RubiksCubeColors[] faceColors = new RubiksCubeColors[ColorHitCounter.NUMBER_OF_POINTS];
-			for (int i = 0; i < ColorHitCounter.NUMBER_OF_POINTS; i++) {
-				faceColors[i] = colorHitCounter.get(i);
-			}
-			final String sideCode = String.valueOf(getSideName());
-			for (int i = 0; i < ColorHitCounter.NUMBER_OF_POINTS; i++) {
-				try {
-					kubeColors.get(sideCode + (i + 1)).setColor(getColor(faceColors, i));	
-				} catch (Exception e) {
-					System.out.println(sideCode + i);
-					e.printStackTrace();
-				}
-			}
-			this.readColorsButton.setDisable(false);
-		}
 	}
 }
