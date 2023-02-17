@@ -68,7 +68,7 @@ public class Client implements Closeable {
 			throw new RuntimeException("Server returned " + returnCode);
 		}
 		
-		System.in.read();
+		//System.in.read();
 	}
 	
 	@Override

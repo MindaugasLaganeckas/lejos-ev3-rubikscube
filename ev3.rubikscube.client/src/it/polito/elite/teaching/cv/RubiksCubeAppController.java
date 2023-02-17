@@ -169,12 +169,19 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		// order is defined here ev3.rubikscube.controller.RubiksCuberSolverClient.solve(String)
 		final String[] facesInOrder = new String[] {"U", "R", "F", "D", "L", "B"};
 		final StringBuilder scrambledCube = new StringBuilder();
+		final int[] faceletCheck = new int[RubiksCubeColors.values().length];
 		for (final String face : facesInOrder) {
 			for (int j = 1; j <= 9; j++) {
-				scrambledCube.append(kubeColors.get(face + j).getColor().toString().charAt(0));
+				final RubiksCubeColors color = kubeColors.get(face + j).getColor();
+				scrambledCube.append(color.toString().charAt(0));
+				faceletCheck[color.ordinal()]++;
 			}
 		}
 		System.out.println(scrambledCube);
+		System.out.println();
+		for (final RubiksCubeColors color : RubiksCubeColors.values()) {
+			System.out.println(color + " " + faceletCheck[color.ordinal()]);
+		}
 		solutionStr = solverClient.solve(scrambledCube.toString());
 		this.solution.setText("Solution: " + solutionStr);
 	}
