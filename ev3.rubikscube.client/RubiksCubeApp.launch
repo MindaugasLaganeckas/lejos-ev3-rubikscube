@@ -2,7 +2,7 @@
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
     <booleanAttribute key="org.eclipse.debug.core.ATTR_FORCE_SYSTEM_CONSOLE_ENCODING" value="false"/>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-        <listEntry value="/ev3.rubikscube.client/src/it/polito/elite/teaching/cv/RubiksCubeApp.java"/>
+        <listEntry value="/ev3.rubikscube.client/src/ev3/rubikscube/ui/RubiksCubeApp.java"/>
     </listAttribute>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
         <listEntry value="1"/>
@@ -10,7 +10,7 @@
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_ATTR_USE_ARGFILE" value="false"/>
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_EXCLUDE_TEST_CODE" value="true"/>
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_CLASSPATH_ONLY_JAR" value="false"/>
-    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="it.polito.elite.teaching.cv.RubiksCubeApp"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ev3.rubikscube.ui.RubiksCubeApp"/>
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="ev3.rubikscube.client"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="ev3.rubikscube.client"/>
     <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.library.path=/home/mindaugas/bin/openjfx-19_linux-x64_bin-sdk/javafx-sdk-19/lib/ -Dprism.verbose=true  --module-path /home/mindaugas/bin/openjfx-19_linux-x64_bin-sdk/javafx-sdk-19/lib/ --add-modules=javafx.controls,javafx.graphics,javafx.fxml"/>

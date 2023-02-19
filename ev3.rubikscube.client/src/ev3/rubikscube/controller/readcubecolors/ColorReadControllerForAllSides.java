@@ -3,7 +3,7 @@ import java.util.Map;
 
 import ev3.rubikscube.controller.MindstormRubiksCubeClient;
 import ev3.rubikscube.controller.frameprocessor.decorator.ColorHitCounter;
-import it.polito.elite.teaching.cv.RubiksCubePlate;
+import ev3.rubikscube.ui.RubiksCubePlate;
 
 public class ColorReadControllerForAllSides implements IColorReadController {
 

@@ -1,4 +1,4 @@
-package it.polito.elite.teaching.cv;
+package ev3.rubikscube.ui;
 	
 import java.io.IOException;
 

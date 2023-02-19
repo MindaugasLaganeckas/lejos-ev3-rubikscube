@@ -3,7 +3,7 @@ package ev3.rubikscube.controller.readcubecolors;
 import java.util.Map;
 
 import ev3.rubikscube.controller.frameprocessor.decorator.ColorHitCounter;
-import it.polito.elite.teaching.cv.RubiksCubePlate;
+import ev3.rubikscube.ui.RubiksCubePlate;
 
 public interface IColorReadController {
 

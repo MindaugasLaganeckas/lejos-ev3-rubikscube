@@ -1,4 +1,4 @@
-package it.polito.elite.teaching.cv;
+package ev3.rubikscube.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

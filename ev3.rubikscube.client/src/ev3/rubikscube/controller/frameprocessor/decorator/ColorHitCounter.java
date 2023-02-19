@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 import org.opencv.core.Point;
 
 import ev3.rubikscube.controller.frameprocessor.CubeColors;
-import it.polito.elite.teaching.cv.RubiksCubeColors;
+import ev3.rubikscube.ui.RubiksCubeColors;
 
 public class ColorHitCounter {
 

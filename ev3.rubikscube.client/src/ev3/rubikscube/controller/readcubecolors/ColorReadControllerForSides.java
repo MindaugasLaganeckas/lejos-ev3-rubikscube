@@ -4,8 +4,8 @@ import java.util.Map;
 
 import ev3.rubikscube.controller.MindstormRubiksCubeClient;
 import ev3.rubikscube.controller.frameprocessor.decorator.ColorHitCounter;
-import it.polito.elite.teaching.cv.RubiksCubeColors;
-import it.polito.elite.teaching.cv.RubiksCubePlate;
+import ev3.rubikscube.ui.RubiksCubeColors;
+import ev3.rubikscube.ui.RubiksCubePlate;
 
 public class ColorReadControllerForSides extends AbstractColorReadController {
 
