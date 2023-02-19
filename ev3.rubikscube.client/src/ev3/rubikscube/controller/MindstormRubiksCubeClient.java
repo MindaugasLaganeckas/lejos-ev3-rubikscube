@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class Client implements Closeable {
+public class MindstormRubiksCubeClient implements Closeable {
 
 	private static String COMMAND_FINISH = "FINISH";
 	
@@ -52,7 +52,7 @@ public class Client implements Closeable {
 	private final DataInputStream din;
 	private final DataOutputStream dout;
 	
-	public Client(final String address, final int port) throws Exception {
+	public MindstormRubiksCubeClient(final String address, final int port) throws Exception {
 		this.socket = new Socket(address, port);
 		this.din = new DataInputStream(socket.getInputStream());
 		this.dout = new DataOutputStream(socket.getOutputStream());
@@ -86,7 +86,7 @@ public class Client implements Closeable {
 	}
 	
 	public static void main(String[] args) throws Exception{
-		try (final Client client = new Client("192.168.1.130", 3333);) {
+		try (final MindstormRubiksCubeClient client = new MindstormRubiksCubeClient("192.168.1.130", 3333);) {
 			final List<String> list = new LinkedList<>(communicationCodes.keySet());
 			final Random rand = new Random();
 			int counter = 0;

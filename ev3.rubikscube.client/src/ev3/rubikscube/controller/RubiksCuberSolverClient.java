@@ -1,7 +1,6 @@
 package ev3.rubikscube.controller;
 
 import cs.min2phase.Search;
-import cs.min2phase.Tools;
 
 public class RubiksCuberSolverClient {
 	

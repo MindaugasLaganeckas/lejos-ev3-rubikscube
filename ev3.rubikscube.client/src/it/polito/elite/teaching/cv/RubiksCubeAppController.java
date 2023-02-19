@@ -11,8 +11,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
-import ev3.rubikscube.controller.Client;
-import ev3.rubikscube.controller.ColorReadController;
+import ev3.rubikscube.controller.MindstormRubiksCubeClient;
 import ev3.rubikscube.controller.RubiksCuberSolverClient;
 import ev3.rubikscube.controller.frameprocessor.CubeColors;
 import ev3.rubikscube.controller.frameprocessor.FrameGrabber;
@@ -21,6 +20,7 @@ import ev3.rubikscube.controller.frameprocessor.decorator.ColorHitCounter;
 import ev3.rubikscube.controller.frameprocessor.decorator.ContourFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.DottedFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.InterprettedFrameDecorator;
+import ev3.rubikscube.controller.readcubecolors.ColorReadControllerForAllSides;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
@@ -38,7 +38,7 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
     private int columns = 12;
     
     private final RubiksCubeAppController me = this;
-    private ColorReadController colorReadController = null;
+    private ColorReadControllerForAllSides colorReadController = null;
     
     private final Map<Integer, String> plateMap = new HashMap<>() {
 		private static final long serialVersionUID = 1L;
@@ -58,7 +58,7 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	private Map<String, RubiksCubePlate> kubeColors;
 	
     private final RubiksCuberSolverClient solverClient = new RubiksCuberSolverClient();
-	private Client client;
+	private MindstormRubiksCubeClient client;
 	
 	public void setRectangles() {
 		this.kubeColors = drawCubeMap();
@@ -153,8 +153,8 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	@FXML
 	protected void connect() {
 		try {
-			this.client = new Client(robotIp.getText(), SERVER_PORT);
-			this.colorReadController = new ColorReadController(this.client);
+			this.client = new MindstormRubiksCubeClient(robotIp.getText(), SERVER_PORT);
+			this.colorReadController = new ColorReadControllerForAllSides(this.client);
 			connectionStatus.setText("Connection status: connected.");
 			readColorsButton.setDisable(false);
 			turnRubiksCubeButton.setDisable(false);
@@ -288,9 +288,9 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	@Override
 	public void propertyChange(final PropertyChangeEvent event) {
 		colorReadController.colorReadCompleted(kubeColors, (ColorHitCounter) event.getSource());
-		this.readColorsButton.setDisable(false);
 		if (colorReadController.isReadSequenceCompleted()) {
-			colorReadController.startNewReadSequence();
+			colorReadController.startReadSequence();
+			this.readColorsButton.setDisable(false);
 		} else {
 			colorReadController.setNextFaceToRead();
 			readColors();
