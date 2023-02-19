@@ -37,6 +37,8 @@ public class ColorReadControllerForSides extends AbstractColorReadController {
 	
 	@Override
 	public void colorReadCompleted(final Map<String, RubiksCubePlate> kubeColors, final ColorHitCounter colorHitCounter) {
+		readStarted = true;
+		
 		final RubiksCubeColors[] faceColors = new RubiksCubeColors[ColorHitCounter.NUMBER_OF_POINTS];
 		for (int i = 0; i < ColorHitCounter.NUMBER_OF_POINTS; i++) {
 			faceColors[i] = colorHitCounter.get(i);
