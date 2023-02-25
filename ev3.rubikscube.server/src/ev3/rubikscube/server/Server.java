@@ -113,6 +113,8 @@ public class Server {
 						dout.flush();
 					}
 					forkStateController.setStateToOff();
+				} catch (Exception e) {
+					// client disconnected without sending proper termination signals
 				}
 			}
 		}
@@ -131,7 +133,7 @@ public class Server {
 		final Up2 up2 = new Up2(forkStateController);
 		final Down down = new Down(forkStateController);
 		final F f = new F(forkStateController);
-		final Fi fi = new Fi(forkStateController);
+		final Fi fi = new Fi(f);
 		final F2 f2 = new F2(f);
 
 		moveMap.put("B", new B(up2, f));

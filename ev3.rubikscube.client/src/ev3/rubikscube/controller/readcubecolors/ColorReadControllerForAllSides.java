@@ -42,12 +42,12 @@ public class ColorReadControllerForAllSides implements IColorReadController {
 		if (!colorReadControllerForMainSides.isReadSequenceCompleted()) {
 			colorReadControllerForMainSides.colorReadCompleted(kubeColors, colorHitCounter);
 		} else {
-			if (colorReadControllerForSides.isReadSequenceCompleted()) {
+			if (!sideReadStarted) {
+				sideReadStarted = true;
+				colorReadControllerForSides.startReadSequence();
+			} else if (colorReadControllerForSides.isReadSequenceCompleted()) {
 				colorReadControllerForSides.finishReadSequence();
 			} else {
-				if (!sideReadStarted) {
-					colorReadControllerForSides.startReadSequence();
-				}
 				colorReadControllerForSides.colorReadCompleted(kubeColors, colorHitCounter);
 			}
 		}

@@ -10,7 +10,7 @@ public class RubiksCubePlate extends StackPane {
 
 	private final Rectangle rectangle;
 	
-	private int currentColor = 0;
+	private int currentColor = RubiksCubeColors.WHITE.ordinal();
 	private boolean colorIsLocked = false;
 	
 	public RubiksCubePlate(final int width, final int height, final int positionX, final int positionY, final String label) {

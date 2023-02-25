@@ -7,7 +7,7 @@ import lejos.robotics.RegulatedMotor;
 
 public class F implements Move {
 
-	private final int direction = -1;
+	private final int direction = 1;
 	private final RegulatedMotor forkMotor;
 	private final ForkStateController forkStateController;
 	
@@ -18,6 +18,10 @@ public class F implements Move {
 
 	@Override
 	public void action() {
+		rotate(direction);
+	}
+
+	public void rotate(final int direction) {
 		forkStateController.setStateToOn();
 		forkMotor.rotate(direction * -45);
 		forkStateController.setStateToOff();

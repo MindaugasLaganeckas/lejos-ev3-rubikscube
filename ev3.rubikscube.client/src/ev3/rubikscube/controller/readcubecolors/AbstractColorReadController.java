@@ -26,14 +26,14 @@ public abstract class AbstractColorReadController implements IColorReadControlle
 	
 	@Override
 	public boolean isReadSequenceCompleted() {
-		return readStarted && currentFaceIndex == 0;
+		return readStarted && currentFaceIndex == orderOfSidesToRead.length;
 	}
 	
 	@Override
 	public void setNextFaceToRead() {
 		try {
 			mindstormRubiksCubeClient.sendCommand("UP");
-			currentFaceIndex = (currentFaceIndex + 1) % orderOfSidesToRead.length;
+			currentFaceIndex++;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

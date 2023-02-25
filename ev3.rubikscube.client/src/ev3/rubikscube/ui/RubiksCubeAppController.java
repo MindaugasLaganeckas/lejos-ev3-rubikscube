@@ -17,7 +17,6 @@ import ev3.rubikscube.controller.frameprocessor.CubeColors;
 import ev3.rubikscube.controller.frameprocessor.FrameGrabber;
 import ev3.rubikscube.controller.frameprocessor.FrameObserver;
 import ev3.rubikscube.controller.frameprocessor.decorator.ColorHitCounter;
-import ev3.rubikscube.controller.frameprocessor.decorator.ContourFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.DottedFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.InterprettedFrameDecorator;
 import ev3.rubikscube.controller.readcubecolors.ColorReadControllerForAllSides;
@@ -107,11 +106,11 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	@FXML
 	private Button turnRubiksCubeButton;
 	@FXML
+	private Button sendSolutionToRobot;
+	@FXML
 	private ImageView originalFrame;
 	@FXML
 	private ImageView processedFrame;
-	@FXML
-	private ImageView contourView;
 	@FXML
 	private Label solution;
 	@FXML
@@ -147,7 +146,7 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	
 	@FXML
 	protected void turnRubiksCube() throws IOException {
-		colorReadController.setNextFaceToRead();
+		client.sendCommand("UP");
 	}
 	
 	@FXML
@@ -158,6 +157,7 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 			connectionStatus.setText("Connection status: connected.");
 			readColorsButton.setDisable(false);
 			turnRubiksCubeButton.setDisable(false);
+			sendSolutionToRobot.setDisable(false);
 		} catch (Exception e) {
 			connectionStatus.setText("Connection status: " + e.getMessage());
 			e.printStackTrace();
@@ -188,8 +188,12 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	
 	@FXML
 	protected void sendSolutionToRobot() throws IOException {
-		for (final String turn : solutionStr.split("\\s+")) {
-			client.sendCommand(turn);			
+		final String[] commands = solutionStr.split("\\s+");
+		int currentTurn = 0;
+		for (final String turn : commands) {
+			client.sendCommand(turn);
+			currentTurn++;
+			System.out.println(String.format("0.2f", currentTurn * 1.0/commands.length));
 		}
 	}
 	
@@ -211,11 +215,6 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		// preserve image ratio
 		processedFrame.setPreserveRatio(true);
 		
-		// set a fixed width for the frame
-		contourView.setFitWidth(380);
-		// preserve image ratio
-		contourView.setPreserveRatio(true);
-		
 		decorator = new InterprettedFrameDecorator(lowerRanges, upperRanges);
 		
 		// grab a frame every 33 ms (30 frames/sec)
@@ -223,7 +222,6 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 				new FrameObserver[] {
 						new FrameObserver(originalFrame, new DottedFrameDecorator()),
 						new FrameObserver(processedFrame, decorator),
-						new FrameObserver(contourView, new ContourFrameDecorator(lowerRanges, upperRanges)),
 			}, VIDEO_DEVICE_INDEX
 		);
 
@@ -273,6 +271,11 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@FXML
+	protected void readCurrentSide() {
+		System.out.println("Read current side");
 	}
 	
 	/**
