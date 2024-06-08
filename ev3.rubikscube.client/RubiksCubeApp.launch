@@ -13,5 +13,5 @@
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ev3.rubikscube.ui.RubiksCubeApp"/>
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="ev3.rubikscube.client"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="ev3.rubikscube.client"/>
-    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.library.path=/home/mindaugas/bin/openjfx-19_linux-x64_bin-sdk/javafx-sdk-19/lib/ -Dprism.verbose=true  --module-path /home/mindaugas/bin/openjfx-19_linux-x64_bin-sdk/javafx-sdk-19/lib/ --add-modules=javafx.controls,javafx.graphics,javafx.fxml"/>
+    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.library.path=/home/mindaugas/Downloads/openjfx-21.0.2_linux-x64_bin-sdk/javafx-sdk-21.0.2/lib/ -Dprism.verbose=true  --module-path /home/mindaugas/Downloads/openjfx-21.0.2_linux-x64_bin-sdk/javafx-sdk-21.0.2/lib/ --add-modules=javafx.controls,javafx.graphics,javafx.fxml"/>
 </launchConfiguration>
