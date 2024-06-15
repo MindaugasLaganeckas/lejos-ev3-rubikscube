@@ -6,6 +6,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -217,6 +218,8 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		
 		decorator = new InterprettedFrameDecorator(lowerRanges, upperRanges);
 		
+		
+		
 		// grab a frame every 33 ms (30 frames/sec)
 		this.frameGrabber = new FrameGrabber( 
 				new FrameObserver[] {
@@ -288,16 +291,25 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		this.readColorsButton.setDisable(true);
 	}
 	
+	final ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
 	@Override
 	public void propertyChange(final PropertyChangeEvent event) {
-		colorReadController.colorReadCompleted(kubeColors, (ColorHitCounter) event.getSource());
-		if (colorReadController.isReadSequenceCompleted()) {
-			colorReadController.startReadSequence();
-			this.readColorsButton.setDisable(false);
-		} else {
-			colorReadController.setNextFaceToRead();
-			readColors();
-		}
+		
+		newSingleThreadExecutor.submit(new Runnable() {
+			
+			@Override
+			public void run() {
+				colorReadController.colorReadCompleted(kubeColors, (ColorHitCounter) event.getSource());
+				if (colorReadController.isReadSequenceCompleted()) {
+					colorReadController.startReadSequence();
+					readColorsButton.setDisable(false);
+				} else {
+					colorReadController.setNextFaceToRead();
+					readColors();
+				}
+			}
+		});
+		
 	}
 	
 	private Map<String, RubiksCubePlate> drawCubeMap() {

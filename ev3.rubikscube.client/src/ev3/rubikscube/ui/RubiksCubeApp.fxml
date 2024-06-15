@@ -156,7 +156,7 @@
                                           <Insets top="10.0" />
                                        </VBox.margin>
                                     </Slider>
-                                    <Slider fx:id="redHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="6">
+                                    <Slider fx:id="redHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="5">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
@@ -167,7 +167,7 @@
                                        </VBox.margin>
                                     </Separator>
                                     <Label text="Orange" />
-                                    <Slider fx:id="orangeLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="6">
+                                    <Slider fx:id="orangeLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="5">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>

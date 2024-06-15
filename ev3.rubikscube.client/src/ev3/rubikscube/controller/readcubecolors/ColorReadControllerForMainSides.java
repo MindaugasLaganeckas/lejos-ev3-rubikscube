@@ -16,7 +16,7 @@ public class ColorReadControllerForMainSides extends AbstractColorReadController
 		final char sideCode = getSideName();
 		// front face position when filmed with the camera
 		if (sideCode == 'F' || sideCode == 'D' || sideCode == 'U') {
-			return faceColors[ColorHitCounter.NUMBER_OF_POINTS - 1 - index];
+			return faceColors[ColorHitCounter.NUMBER_OF_FACETS - 1 - index];
 		} else if (sideCode == 'B') {
 			return faceColors[index];
 		}
@@ -27,12 +27,12 @@ public class ColorReadControllerForMainSides extends AbstractColorReadController
 	public void colorReadCompleted(final Map<String, RubiksCubePlate> kubeColors, final ColorHitCounter colorHitCounter) {
 		readStarted = true;
 		
-		final RubiksCubeColors[] faceColors = new RubiksCubeColors[ColorHitCounter.NUMBER_OF_POINTS];
-		for (int i = 0; i < ColorHitCounter.NUMBER_OF_POINTS; i++) {
+		final RubiksCubeColors[] faceColors = new RubiksCubeColors[ColorHitCounter.NUMBER_OF_FACETS];
+		for (int i = 0; i < ColorHitCounter.NUMBER_OF_FACETS; i++) {
 			faceColors[i] = colorHitCounter.get(i);
 		}
 		final String sideCode = String.valueOf(getSideName());
-		for (int i = 0; i < ColorHitCounter.NUMBER_OF_POINTS; i++) {
+		for (int i = 0; i < ColorHitCounter.NUMBER_OF_FACETS; i++) {
 			try {
 				kubeColors.get(sideCode + (i + 1)).setColor(getColor(faceColors, i));	
 			} catch (Exception e) {

@@ -15,11 +15,14 @@ public class DottedFrameDecorator implements FrameDecorator {
 
 	@Override
 	public Mat decorate(Mat input) {
-		return createFrameWithDots(input, ColorHitCounter.calcPointsOfInterest(input.width(), input.height()));
+		return createFrameWithDots(input, ColorHitCounter.calcPointsOfInterestFlat(input.width(), input.height()));
 	}
 
 	private Mat createFrameWithDots(Mat originalFrame, List<Point> pointsOfInterest) {
 		final Mat clone = originalFrame.clone();
+		
+		
+		
 		final Scalar blue = new Scalar(255, 0, 0);
 		pointsOfInterest.forEach(p -> {
 			Imgproc.circle(clone, p, 5, blue, -1);
