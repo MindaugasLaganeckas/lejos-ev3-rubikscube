@@ -1,6 +1,7 @@
 package ev3.rubikscube.controller.frameprocessor.decorator;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicIntegerArray;
@@ -43,53 +44,34 @@ public class ProcessedFrameDecorator implements FrameDecorator {
 		final Mat illuminationCompensation = illuminationCompensation(input);
 		final Mat hsvImage = histogramEqualization(illuminationCompensation);
 		
-		final Mat maskedImage = maskedImage(input, hsvImage);
+		final Mat maskedImage = maskedImage(input, hsvImage, pointsForColorTest);
 		if (!maskedImage.empty()) {
-			for (int facetIndex = 0; facetIndex < pointsForColorTest.size(); facetIndex++) {
-				final List<Point> facetTestPoints = pointsForColorTest.get(facetIndex);
-				for (int i = 0; i < CubeColors.values().length; i++) {
-					final CubeColors color = CubeColors.values()[i];
-					checkColor(facetIndex, maskedImage, facetTestPoints, lowerRanges.get(i), upperRanges.get(i), color);
-				}
-			}
 			return maskedImage;	
 		}
 		Imgproc.cvtColor(hsvImage, hsvImage, Imgproc.COLOR_HSV2BGR);
 		return hsvImage;
 	}
 	
-	private void checkColor(final int facetIndex, final Mat input, final List<Point> pointsForColorTest, final int lowerRange,
-			final int upperRange, final CubeColors color) {
+	private void checkColor(final int facetIndex, final Mat input, final List<Point> pointsForColorTest, final CubeColors color) {
 		if (getColorHitCounter() != null) {
 			for (final Point p : pointsForColorTest) {
 				double[] hsv = input.get((int)p.y, (int)p.x);
-				final int colorValue = (int)hsv[0];
-				if (colorValue >= lowerRange && colorValue < upperRange) {
+				if (colorExists(hsv)) {
 					getColorHitCounter().inc(color, facetIndex);
 				}
 			}	
 		}
 	}
 
-	private Mat maskedImage(final Mat input, final Mat hsvImage) {
+	private boolean colorExists(double[] hsv) {
+		return (int)hsv[1] != 0;
+	}
+
+	private Mat maskedImage(final Mat input, final Mat hsvImage, final List<List<Point>> pointsForColorTest) {
 		
 		final Mat result = Mat.zeros(input.rows(), input.cols(), input.type());
-		// RED is the first color in color and we will check for it later
-		for (int i = 1; i < CubeColors.values().length; i++) {
-			final Scalar lowerRange = new Scalar(lowerRanges.get(i), 50, 50);
-			final Scalar upperRange = new Scalar(upperRanges.get(i), 255, 255);
-			
-			final Mat mask = new Mat();
-	        Core.inRange(hsvImage, lowerRange, upperRange, mask);
-	        
-	        final Mat areas = new Mat();
-	        Core.bitwise_and(input, input, areas, mask);
-	        
-	        if (showFilters[i].get()) {
-	        	Core.bitwise_or(areas, result, result);
-			}
-			
-		}
+		final List<Mat> colorAreas = new LinkedList<Mat>();
+		
 		// RED color has two ranges to check for
 		{
 			final int redColorIndex = CubeColors.RED.ordinal();
@@ -109,13 +91,39 @@ public class ProcessedFrameDecorator implements FrameDecorator {
 	        Core.add(mask1, mask2, redMask);
 	        
 	        // Bitwise-AND mask and original image
-	        Mat redAreas = new Mat();
+	        final Mat redAreas = new Mat();
 	        Core.bitwise_and(input, input, redAreas, redMask);
 	        
 	        if (showFilters[redColorIndex].get()) {
 	        	Core.bitwise_or(redAreas, result, result);
 			}
+	        colorAreas.add(redAreas);
 		}
+		// RED is the first color in color and we have already checked for it
+		for (int i = 1; i < CubeColors.values().length; i++) {
+			final Scalar lowerRange = new Scalar(lowerRanges.get(i), 50, 50);
+			final Scalar upperRange = new Scalar(upperRanges.get(i), 255, 255);
+			
+			final Mat mask = new Mat();
+	        Core.inRange(hsvImage, lowerRange, upperRange, mask);
+	        
+	        final Mat areas = new Mat();
+	        Core.bitwise_and(input, input, areas, mask);
+	        if (showFilters[i].get()) {
+	        	Core.bitwise_or(areas, result, result);
+			}
+	        
+	        colorAreas.add(areas);
+		}
+		
+		for (int facetIndex = 0; facetIndex < pointsForColorTest.size(); facetIndex++) {
+			final List<Point> facetTestPoints = pointsForColorTest.get(facetIndex);
+			for (int colorIndex = 0; colorIndex < CubeColors.values().length; colorIndex++) {
+				final CubeColors color = CubeColors.values()[colorIndex];
+				checkColor(facetIndex, colorAreas.get(colorIndex), facetTestPoints, color);
+			}
+		}
+
 		return result;
 	}
 	
