@@ -51,11 +51,17 @@ public class MindstormRubiksCubeClient implements Closeable {
 	private final Socket socket;
 	private final DataInputStream din;
 	private final DataOutputStream dout;
+
+	private boolean debugModeEnabled;
 	
 	public MindstormRubiksCubeClient(final String address, final int port) throws Exception {
 		this.socket = new Socket(address, port);
 		this.din = new DataInputStream(socket.getInputStream());
 		this.dout = new DataOutputStream(socket.getOutputStream());
+	}
+	
+	public void enableDebugMode(final boolean enableDebugMode) {
+		debugModeEnabled = enableDebugMode;
 	}
 	
 	public void sendCommand(final String command) throws IOException {
@@ -68,7 +74,9 @@ public class MindstormRubiksCubeClient implements Closeable {
 			throw new RuntimeException("Server returned " + returnCode);
 		}
 		
-		//System.in.read();
+		if (debugModeEnabled) {
+			System.in.read();
+		}
 	}
 	
 	@Override

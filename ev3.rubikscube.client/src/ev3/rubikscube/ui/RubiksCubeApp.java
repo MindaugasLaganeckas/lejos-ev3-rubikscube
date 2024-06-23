@@ -37,6 +37,7 @@ public class RubiksCubeApp extends Application
 			final RubiksCubeAppController controller = loader.getController();
 			controller.setRectangles();
 			controller.initRanges();
+			controller.updateFilters();
 			
 			// show the GUI
 			primaryStage.show();

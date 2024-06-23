@@ -80,7 +80,7 @@
                                     <Insets top="10.0" />
                                  </VBox.margin>
                               </Button>
-                              <Button fx:id="readCurrentSideButton" alignment="CENTER" disable="true" onAction="#readCurrentSide" text="Read current side">
+                              <Button fx:id="readCurrentSideButton" alignment="CENTER" onAction="#readCurrentSide" text="Read current side">
                                  <opaqueInsets>
                                     <Insets />
                                  </opaqueInsets>
@@ -95,7 +95,15 @@
                                  <VBox.margin>
                                     <Insets top="10.0" />
                                  </VBox.margin>
-                              </Button>                             
+                              </Button>
+                              <CheckBox fx:id="debugMode" text="Debug mode" onMouseClicked="#debugMode">
+								<opaqueInsets>
+								   <Insets />
+								</opaqueInsets>
+								<VBox.margin>
+								   <Insets top="10.0" />
+								</VBox.margin>
+                              </CheckBox>                             
                      </children>
                   </VBox>
           </children>
@@ -133,10 +141,15 @@
                 <AnchorPane maxWidth="-Infinity" minWidth="-Infinity" prefWidth="500.0">
                      <children>
                         <VBox prefHeight="500.0" prefWidth="100.0">
-                        
                            <children>
 								<Label prefHeight="15.0" prefWidth="157.0" text="Computer vision view" />
 								<ImageView fx:id="processedFrame">
+									<VBox.margin>
+                                          <Insets top="10.0" />
+                                       </VBox.margin>
+                                </ImageView>
+                                <Label prefHeight="15.0" prefWidth="157.0" text="Colors read" />
+								<ImageView fx:id="colorFrame">
 									<VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
@@ -150,13 +163,21 @@
                         <VBox prefHeight="387.0" prefWidth="408.0">
                            <children>
                               <Label text="Red" />
+		                              <CheckBox fx:id="showRedFilter" text="Show red filter" onMouseClicked="#updateFilters" selected="true">
+										<opaqueInsets>
+										   <Insets />
+										</opaqueInsets>
+										<VBox.margin>
+										   <Insets top="10.0" />
+										</VBox.margin>
+		                              </CheckBox> 
                               		<!-- https://stackoverflow.com/questions/51229126/how-to-find-the-red-color-regions-using-opencv -->
                                     <Slider fx:id="redLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="0">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
                                     </Slider>
-                                    <Slider fx:id="redHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="5">
+                                    <Slider fx:id="redHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="4">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
@@ -167,6 +188,14 @@
                                        </VBox.margin>
                                     </Separator>
                                     <Label text="Orange" />
+		                              <CheckBox fx:id="showOrangeFilter" text="Show orange filter" onMouseClicked="#updateFilters" selected="true">
+										<opaqueInsets>
+										   <Insets />
+										</opaqueInsets>
+										<VBox.margin>
+										   <Insets top="10.0" />
+										</VBox.margin>
+		                              </CheckBox>                                     
                                     <Slider fx:id="orangeLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="5">
                                        <VBox.margin>
                                           <Insets top="10.0" />
@@ -183,6 +212,14 @@
                                        </VBox.margin>
                                     </Separator>
                                     <Label text="Yellow" />
+		                              <CheckBox fx:id="showYellowFilter" text="Show yellow filter" onMouseClicked="#updateFilters" selected="true">
+										<opaqueInsets>
+										   <Insets />
+										</opaqueInsets>
+										<VBox.margin>
+										   <Insets top="10.0" />
+										</VBox.margin>
+		                              </CheckBox>                                     
                                     <Slider fx:id="yellowLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="20">
                                        <VBox.margin>
                                           <Insets top="10.0" />
@@ -199,6 +236,14 @@
                                        </VBox.margin>
                                     </Separator>
                                     <Label text="Green" />
+		                              <CheckBox fx:id="showGreenFilter" text="Show green filter" onMouseClicked="#updateFilters" selected="true">
+										<opaqueInsets>
+										   <Insets />
+										</opaqueInsets>
+										<VBox.margin>
+										   <Insets top="10.0" />
+										</VBox.margin>
+		                              </CheckBox>                                     
                                     <Slider fx:id="greenLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="40">
                                        <VBox.margin>
                                           <Insets top="10.0" />
@@ -215,6 +260,14 @@
                                        </VBox.margin>
                                     </Separator>
                                     <Label text="Blue" />
+                                      <CheckBox fx:id="showBlueFilter" text="Show blue filter" onMouseClicked="#updateFilters" selected="true">
+										<opaqueInsets>
+										   <Insets />
+										</opaqueInsets>
+										<VBox.margin>
+										   <Insets top="10.0" />
+										</VBox.margin>
+		                              </CheckBox> 
                                     <Slider fx:id="blueLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="80">
                                        <VBox.margin>
                                           <Insets top="10.0" />
