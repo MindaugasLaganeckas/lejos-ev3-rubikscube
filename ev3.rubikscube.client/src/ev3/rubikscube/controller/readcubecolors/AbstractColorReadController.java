@@ -7,14 +7,14 @@ import ev3.rubikscube.controller.MindstormRubiksCubeClient;
 public abstract class AbstractColorReadController implements IColorReadController {
 
 	protected int currentFaceIndex = 0;
+	protected boolean startSequenceInitialized = false;
+	
 	/**
 	 * Camera is facing first back 'B' side and then rotating U --> B etc
 	 */
 	protected char[] orderOfSidesToRead = {'B', 'U', 'F', 'D'};
 	
 	protected final MindstormRubiksCubeClient mindstormRubiksCubeClient;
-	
-	protected boolean readStarted = false;
 	
 	public AbstractColorReadController(final MindstormRubiksCubeClient client) {
 		this.mindstormRubiksCubeClient = client;
@@ -25,12 +25,7 @@ public abstract class AbstractColorReadController implements IColorReadControlle
 	}
 	
 	@Override
-	public boolean isReadSequenceCompleted() {
-		return readStarted && currentFaceIndex == orderOfSidesToRead.length;
-	}
-	
-	@Override
-	public void setNextFaceToRead() {
+	public void turnToNextFace() {
 		try {
 			mindstormRubiksCubeClient.sendCommand("DOWN");
 			currentFaceIndex++;
@@ -38,5 +33,20 @@ public abstract class AbstractColorReadController implements IColorReadControlle
 			e.printStackTrace();
 		}
 	}
-
+	
+	protected boolean startSequenceInitialized() {
+		return startSequenceInitialized;
+	}
+	protected void initializedStartSequence() {
+		initializedStartSequenceInternal();
+		startSequenceInitialized = true;
+	}
+	
+	protected boolean hasNextFaceToRead() {
+		return currentFaceIndex < orderOfSidesToRead.length;
+	}
+	
+	protected abstract void finishReadSequence();
+	
+	protected abstract void initializedStartSequenceInternal();
 }

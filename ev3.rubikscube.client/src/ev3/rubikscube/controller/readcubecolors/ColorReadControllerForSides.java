@@ -13,7 +13,8 @@ public class ColorReadControllerForSides extends AbstractColorReadController {
 		super(client);
 	}
 
-	public void startReadSequence() {
+	@Override
+	public void initializedStartSequenceInternal() {
 		try {
 			for (int i = 0; i < 4; i++) {
 				mindstormRubiksCubeClient.sendCommand("F'");
@@ -24,6 +25,7 @@ public class ColorReadControllerForSides extends AbstractColorReadController {
 		}
 	}
 	
+	@Override
 	public void finishReadSequence() {
 		try {
 			for (int i = 0; i < 4; i++) {
@@ -37,7 +39,7 @@ public class ColorReadControllerForSides extends AbstractColorReadController {
 	
 	@Override
 	public void colorReadCompleted(final Map<String, RubiksCubePlate> kubeColors, final ColorHitCounter colorHitCounter) {
-		readStarted = true;
+		if (!hasNextFaceToRead()) return;
 		
 		final RubiksCubeColors[] faceColors = new RubiksCubeColors[ColorHitCounter.NUMBER_OF_FACETS];
 		for (int i = 0; i < ColorHitCounter.NUMBER_OF_FACETS; i++) {

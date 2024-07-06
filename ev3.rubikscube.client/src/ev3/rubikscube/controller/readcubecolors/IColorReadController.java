@@ -7,9 +7,7 @@ import ev3.rubikscube.ui.RubiksCubePlate;
 
 public interface IColorReadController {
 
-	boolean isReadSequenceCompleted();
-
-	void setNextFaceToRead();
+	void turnToNextFace();
 
 	void colorReadCompleted(Map<String, RubiksCubePlate> kubeColors, ColorHitCounter colorHitCounter);
 

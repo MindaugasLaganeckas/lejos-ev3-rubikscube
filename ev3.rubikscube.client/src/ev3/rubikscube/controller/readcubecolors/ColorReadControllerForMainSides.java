@@ -12,17 +12,9 @@ public class ColorReadControllerForMainSides extends AbstractColorReadController
 		super(client);
 	}
 
-	private static RubiksCubeColors getColor(final RubiksCubeColors[] faceColors, final int index, final char sideCode) {
-		// front face position when filmed with the camera
-		if (sideCode == 'F' || sideCode == 'D' || sideCode == 'U') {
-			return faceColors[ColorHitCounter.NUMBER_OF_FACETS - 1 - index];
-		}
-		return faceColors[index];
-	}
-
 	@Override	
 	public void colorReadCompleted(final Map<String, RubiksCubePlate> kubeColors, final ColorHitCounter colorHitCounter) {
-		readStarted = true;
+		if (!hasNextFaceToRead()) return;
 		
 		final RubiksCubeColors[] faceColors = new RubiksCubeColors[ColorHitCounter.NUMBER_OF_FACETS];
 		for (int i = 0; i < ColorHitCounter.NUMBER_OF_FACETS; i++) {
@@ -37,4 +29,18 @@ public class ColorReadControllerForMainSides extends AbstractColorReadController
 			}
 		}
 	}
+	
+	private static RubiksCubeColors getColor(final RubiksCubeColors[] faceColors, final int index, final char sideCode) {
+		// front face position when filmed with the camera
+		if (sideCode == 'F' || sideCode == 'D' || sideCode == 'U') {
+			return faceColors[ColorHitCounter.NUMBER_OF_FACETS - 1 - index];
+		}
+		return faceColors[index];
+	}
+	
+	@Override
+	public void initializedStartSequenceInternal() {}
+	
+	@Override
+	public void finishReadSequence() {}
 }

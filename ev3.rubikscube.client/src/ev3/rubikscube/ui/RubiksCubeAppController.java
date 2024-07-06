@@ -40,8 +40,6 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
     private int rows = 9;
     private int columns = 12;
     
-    private boolean readAllSidesEnabled = false;
-    
     private final RubiksCubeAppController me = this;
     private ColorReadControllerForAllSides colorReadController = null;
     
@@ -193,7 +191,6 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	protected void connect() {
 		try {
 			this.client = new MindstormRubiksCubeClient(robotIp.getText(), SERVER_PORT);
-			this.colorReadController = new ColorReadControllerForAllSides(this.client);
 			connectionStatus.setText("Connection status: connected.");
 			readColorsButton.setDisable(false);
 			turnRubiksCubeButton.setDisable(false);
@@ -262,8 +259,8 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		colorFrame.setPreserveRatio(true);
 				
 		decorator = new ProcessedFrameDecorator(lowerRanges, upperRanges, showFilters);
-		final ColorHitCounter colorHitCounter = new ColorHitCounter(me);
-		decorator.resetColorRead(colorHitCounter);
+		final ColorHitCounter counter = new ColorHitCounter(me);
+		decorator.resetColorRead(counter);
 		
 		// grab a frame every 33 ms (30 frames/sec)
 		this.frameGrabber = new FrameGrabber( 
@@ -324,49 +321,39 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	
 	@FXML
 	protected void readCurrentSide() {
-		final ColorHitCounter colorHitCounter = new ColorHitCounter(me);
-		decorator.resetColorRead(colorHitCounter);
+		final ColorHitCounter counter = new ColorHitCounter(me);
+		decorator.resetColorRead(counter);
 	}
 	
+	private boolean readAllStarted = false;
 	/**
 	 * When the read is done, {@link #propertyChange(PropertyChangeEvent)} will be called by {@link #colorHitCounter}
 	 */
 	@FXML
 	protected void readColors() {
-		readAllSidesEnabled = true;
-		final ColorHitCounter colorHitCounter = new ColorHitCounter(me);
-		decorator.resetColorRead(colorHitCounter);
-		this.readColorsButton.setDisable(true);
+		if (this.client != null) {
+			this.colorReadController = new ColorReadControllerForAllSides(this.client, me, decorator);
+			this.readColorsButton.setDisable(true);
+			this.colorReadController.startRead();
+			this.readAllStarted = true;
+		}
 	}
 
 	@Override
 	public void propertyChange(final PropertyChangeEvent event) {
+		if (!readAllStarted) return;
 		
-		final ColorHitCounter colorHitCounter = (ColorHitCounter) event.getSource();
-		decorator.resetColorRead(colorHitCounter);
-		
-		if (debugMode.isSelected()) {
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+		if (event.getSource() == me) {
+			System.out.println("we are done reading");
+			this.readColorsButton.setDisable(false);
+			return;
 		}
-		
-		if (readAllSidesEnabled && client != null) {
-			newSingleThreadExecutor.submit(new Runnable() {
-				
+		if (event.getSource() instanceof ColorHitCounter) {
+			newSingleThreadExecutor.execute(new Runnable() {
 				@Override
 				public void run() {
-					colorReadController.colorReadCompleted(kubeColors, colorHitCounter);
-					if (colorReadController.isReadSequenceCompleted()) {
-						colorReadController.startReadSequence();
-						readColorsButton.setDisable(false);
-						readAllSidesEnabled = false;
-					} else {
-						colorReadController.setNextFaceToRead();
-						readColors();
-					}
+					colorReadController.colorReadCompleted(kubeColors, (ColorHitCounter) event.getSource());
+					colorReadController.turnToNextFace();
 				}
 			});
 		}
