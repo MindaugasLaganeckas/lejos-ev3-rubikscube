@@ -136,9 +136,9 @@ public class Server {
 		final Fi fi = new Fi(f);
 		final F2 f2 = new F2(f);
 
-		moveMap.put("B", new B(up2, fi));
+		moveMap.put("B", new B(up2, f));
 		moveMap.put("B2", new B2(up2, f2));
-		moveMap.put("B'", new Bi(up2, f));
+		moveMap.put("B'", new Bi(up2, fi));
 
 		moveMap.put("D", new D(up, down, f));
 		moveMap.put("D2", new D2(up, down, f2));

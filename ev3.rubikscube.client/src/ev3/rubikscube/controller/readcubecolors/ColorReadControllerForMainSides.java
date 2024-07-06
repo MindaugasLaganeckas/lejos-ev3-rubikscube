@@ -12,13 +12,10 @@ public class ColorReadControllerForMainSides extends AbstractColorReadController
 		super(client);
 	}
 
-	private RubiksCubeColors getColor(final RubiksCubeColors[] faceColors, final int index) {
-		final char sideCode = getSideName();
+	private static RubiksCubeColors getColor(final RubiksCubeColors[] faceColors, final int index, final char sideCode) {
 		// front face position when filmed with the camera
 		if (sideCode == 'F' || sideCode == 'D' || sideCode == 'U') {
 			return faceColors[ColorHitCounter.NUMBER_OF_FACETS - 1 - index];
-		} else if (sideCode == 'B') {
-			return faceColors[index];
 		}
 		return faceColors[index];
 	}
@@ -34,7 +31,7 @@ public class ColorReadControllerForMainSides extends AbstractColorReadController
 		final String sideCode = String.valueOf(getSideName());
 		for (int i = 0; i < ColorHitCounter.NUMBER_OF_FACETS; i++) {
 			try {
-				kubeColors.get(sideCode + (i + 1)).setColor(getColor(faceColors, i));	
+				kubeColors.get(sideCode + (i + 1)).setColor(getColor(faceColors, i, getSideName()));	
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

@@ -41,7 +41,7 @@ public class ColorReadControllerForAllSides implements IColorReadController {
 
 	@Override	
 	public void colorReadCompleted(final Map<String, RubiksCubePlate> kubeColors, final ColorHitCounter colorHitCounter) {
-		if (!colorReadControllerForMainSides.isReadSequenceCompleted()) {
+		if (!sideReadStarted && !colorReadControllerForMainSides.isReadSequenceCompleted()) {
 			colorReadControllerForMainSides.colorReadCompleted(kubeColors, colorHitCounter);
 		} else {
 			if (!sideReadStarted) {

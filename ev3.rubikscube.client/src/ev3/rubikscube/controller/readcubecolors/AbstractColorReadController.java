@@ -32,7 +32,7 @@ public abstract class AbstractColorReadController implements IColorReadControlle
 	@Override
 	public void setNextFaceToRead() {
 		try {
-			mindstormRubiksCubeClient.sendCommand("UP");
+			mindstormRubiksCubeClient.sendCommand("DOWN");
 			currentFaceIndex++;
 		} catch (IOException e) {
 			e.printStackTrace();

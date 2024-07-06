@@ -40,6 +40,8 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
     private int rows = 9;
     private int columns = 12;
     
+    private boolean readAllSidesEnabled = false;
+    
     private final RubiksCubeAppController me = this;
     private ColorReadControllerForAllSides colorReadController = null;
     
@@ -123,7 +125,10 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	private Label connectionStatus;
 	@FXML
 	private TextField robotIp;
-	
+	final ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
+
+	@FXML TextField turnToMake;
+	@FXML Button turnToMakeButton;
 	@FXML CheckBox debugMode;
 	@FXML CheckBox showRedFilter;
 	@FXML CheckBox showOrangeFilter;
@@ -229,7 +234,7 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		for (final String turn : commands) {
 			client.sendCommand(turn);
 			currentTurn++;
-			System.out.println(String.format("0.2f", currentTurn * 1.0/commands.length));
+			System.out.println(String.format("%.2f", currentTurn * 1.0/commands.length * 1.0));
 		}
 	}
 	
@@ -328,29 +333,36 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	 */
 	@FXML
 	protected void readColors() {
+		readAllSidesEnabled = true;
 		final ColorHitCounter colorHitCounter = new ColorHitCounter(me);
 		decorator.resetColorRead(colorHitCounter);
 		this.readColorsButton.setDisable(true);
 	}
-	
-	final ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
-
-	@FXML TextField turnToMake;
-
-	@FXML Button turnToMakeButton;
 
 	@Override
 	public void propertyChange(final PropertyChangeEvent event) {
 		
-		if (client != null) {
+		final ColorHitCounter colorHitCounter = (ColorHitCounter) event.getSource();
+		decorator.resetColorRead(colorHitCounter);
+		
+		if (debugMode.isSelected()) {
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		if (readAllSidesEnabled && client != null) {
 			newSingleThreadExecutor.submit(new Runnable() {
 				
 				@Override
 				public void run() {
-					colorReadController.colorReadCompleted(kubeColors, (ColorHitCounter) event.getSource());
+					colorReadController.colorReadCompleted(kubeColors, colorHitCounter);
 					if (colorReadController.isReadSequenceCompleted()) {
 						colorReadController.startReadSequence();
 						readColorsButton.setDisable(false);
+						readAllSidesEnabled = false;
 					} else {
 						colorReadController.setNextFaceToRead();
 						readColors();

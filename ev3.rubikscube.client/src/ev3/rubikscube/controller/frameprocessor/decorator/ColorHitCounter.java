@@ -19,7 +19,7 @@ public class ColorHitCounter {
 	private static final int NUMBER_OF_POINTS_IN_FACET = 9;
 	public static final int NUMBER_OF_FACETS = 9;
 	private static final int NUMBER_OF_POINTS = NUMBER_OF_FACETS * NUMBER_OF_POINTS_IN_FACET;
-	private static final int TIMES_TO_READ_BEFORE_NOTIFY = NUMBER_OF_POINTS * 11; // read every facet x times
+	private static final int TIMES_TO_READ_BEFORE_NOTIFY = NUMBER_OF_POINTS * 30; // read every facet x times
 	private static final int ERROR_THRESHOLD = TIMES_TO_READ_BEFORE_NOTIFY / 10;
 	private final ColorHitCounter me = this;
 	
