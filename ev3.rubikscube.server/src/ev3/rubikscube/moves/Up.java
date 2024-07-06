@@ -23,8 +23,8 @@ public class Up implements Move {
 		
 		leftMotor.synchronizeWith(new RegulatedMotor[] {rightMotor});
 		leftMotor.startSynchronization();
-		leftMotor.rotate(-90, true);
-		rightMotor.rotate(-90, true);
+		leftMotor.rotate(90, true);
+		rightMotor.rotate(90, true);
 		leftMotor.endSynchronization();
 		leftMotor.waitComplete();
 		rightMotor.waitComplete();

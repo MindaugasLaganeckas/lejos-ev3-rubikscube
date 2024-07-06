@@ -5,17 +5,17 @@ import ev3.rubikscube.server.Move;
 public class B implements Move {
 
 	private final Up2 up2;
-	private final F f;
+	private final Fi fi;
 	
-	public B(final Up2 up2, final F f) {
+	public B(final Up2 up2, final Fi fi) {
 		this.up2 = up2;
-		this.f = f;
+		this.fi = fi;
 	}
 
 	@Override
 	public void action() {
 		up2.action();
-		f.action();
+		fi.action();
 		up2.action();
 	}
 

@@ -154,6 +154,12 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		upperRanges.set(CubeColors.BLUE.ordinal(), (int)blueHigh.getValue());
 	}
 	
+	@FXML public void turnToMakeButton() throws IOException {
+		if (client != null) {
+			client.sendCommand(turnToMake.getText());
+		}
+	}
+	
 	@FXML protected void debugMode() {
 		if (client != null) {
 			client.enableDebugMode(debugMode.isSelected());
@@ -187,6 +193,7 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 			readColorsButton.setDisable(false);
 			turnRubiksCubeButton.setDisable(false);
 			sendSolutionToRobot.setDisable(false);
+			turnToMakeButton.setDisable(false);
 		} catch (Exception e) {
 			connectionStatus.setText("Connection status: " + e.getMessage());
 			e.printStackTrace();
@@ -327,6 +334,10 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	}
 	
 	final ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
+
+	@FXML TextField turnToMake;
+
+	@FXML Button turnToMakeButton;
 
 	@Override
 	public void propertyChange(final PropertyChangeEvent event) {
