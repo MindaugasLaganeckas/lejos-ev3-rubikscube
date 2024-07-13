@@ -15,12 +15,14 @@ import org.opencv.imgproc.Imgproc;
 import ev3.rubikscube.controller.frameprocessor.CubeColors;
 import ev3.rubikscube.controller.frameprocessor.FrameDecorator;
 
+import static ev3.rubikscube.ui.RubiksCubeAppController.RED_COLLOR_LOWER_RANGE2;
+import static ev3.rubikscube.ui.RubiksCubeAppController.RED_COLLOR_UPPER_RANGE2;
+
 public class ProcessedFrameDecorator implements FrameDecorator {
 
 	private final AtomicIntegerArray lowerRanges;
 	private final AtomicIntegerArray upperRanges;
 	private final AtomicBoolean[] showFilters;
-	private final int[] colorLookup;
 	
 	private ColorHitCounter colorHitCounter = null;
 	
@@ -29,11 +31,10 @@ public class ProcessedFrameDecorator implements FrameDecorator {
 	}
 	
 	public ProcessedFrameDecorator(final AtomicIntegerArray lowerRanges, final AtomicIntegerArray upperRanges, 
-			final AtomicBoolean[] showFilters, final int[] colorLookup) {
+			final AtomicBoolean[] showFilters) {
 		this.lowerRanges = lowerRanges;
 		this.upperRanges = upperRanges;
 		this.showFilters = showFilters;
-		this.colorLookup = colorLookup;
 	}
 	
 	@Override
@@ -81,8 +82,8 @@ public class ProcessedFrameDecorator implements FrameDecorator {
 	        // Define the range of red color in HSV
 			final Scalar lowerRed1 = new Scalar(lowerRanges.get(redColorIndex), 50, 50);
 			final Scalar upperRed1 = new Scalar(upperRanges.get(redColorIndex), 255, 255);
-			final Scalar lowerRed2 = new Scalar(120, 50, 50);
-			final Scalar upperRed2 = new Scalar(240, 255, 255);
+			final Scalar lowerRed2 = new Scalar(RED_COLLOR_LOWER_RANGE2, 50, 50);
+			final Scalar upperRed2 = new Scalar(RED_COLLOR_UPPER_RANGE2, 255, 255);
 			
 	        // Threshold the HSV image to get only red colors
 	        final Mat mask1 = new Mat();

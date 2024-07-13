@@ -6,12 +6,14 @@ import java.io.IOException;
 import org.opencv.core.Mat;
 import org.opencv.videoio.VideoCapture;
 
+import ev3.rubikscube.ui.IFrameObserver;
+
 public class FrameGrabber implements Runnable, Closeable {
 	
 	private final VideoCapture capture;
-	private final FrameObserver[] observers;
+	private final IFrameObserver[] observers;
 	
-	public FrameGrabber(final FrameObserver[] observers, final int videoDeviceIndex) {
+	public FrameGrabber(final IFrameObserver[] observers, final int videoDeviceIndex) {
 		this.capture = new VideoCapture(videoDeviceIndex);
 		// start the video capture
 		this.capture.open(videoDeviceIndex);
@@ -24,7 +26,7 @@ public class FrameGrabber implements Runnable, Closeable {
 	@Override
 	public void run() {
 		final Mat frame = grabFrame();
-		for (final FrameObserver frameObserver : observers) {
+		for (final IFrameObserver frameObserver : observers) {
 			try {
 				frameObserver.update(frame);
 			} catch (Exception e) {

@@ -2,10 +2,11 @@ package ev3.rubikscube.controller.frameprocessor;
 
 import org.opencv.core.Mat;
 
+import ev3.rubikscube.ui.IFrameObserver;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-public class FrameObserver {
+public class FrameObserver implements IFrameObserver {
 	
 	private final ImageView imageView;
 	private final FrameDecorator decorator;
@@ -15,7 +16,7 @@ public class FrameObserver {
 		this.decorator = decorator;
 	}
 	
-	void update(final Mat frame) {
+	public void update(final Mat frame) {
 		final Mat decoratedFrame = decorator.decorate(frame);
 		updateImageView(Utils.mat2Image(decoratedFrame));	
 	}

@@ -24,6 +24,7 @@ import ev3.rubikscube.controller.frameprocessor.decorator.ColorHitCounter;
 import ev3.rubikscube.controller.frameprocessor.decorator.ProcessedFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.SquareFrameDecorator;
 import ev3.rubikscube.controller.readcubecolors.ColorReadControllerForAllSides;
+import ev3.rubikscube.controller.readcubecolors.CubeColorsReader;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
@@ -37,6 +38,8 @@ import javafx.scene.layout.TilePane;
 public class RubiksCubeAppController implements Closeable, PropertyChangeListener {
 
 	private static final int VIDEO_DEVICE_INDEX = 0;
+	public static final int RED_COLLOR_LOWER_RANGE2 = 120;
+	public static final int RED_COLLOR_UPPER_RANGE2 = 240;
 	
     private int rows = 9;
     private int columns = 12;
@@ -167,7 +170,7 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 			}
 		}
 		// extra for the second red color range
-		for (int j = 120; j <= 240; j++) {
+		for (int j = RED_COLLOR_LOWER_RANGE2; j <= RED_COLLOR_UPPER_RANGE2; j++) {
 			colorLookup[j] = CubeColors.RED.ordinal();
 		}
 	}
@@ -273,16 +276,17 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		// preserve image ratio
 		colorFrame.setPreserveRatio(true);
 				
-		decorator = new ProcessedFrameDecorator(lowerRanges, upperRanges, showFilters, colorLookup);
+		decorator = new ProcessedFrameDecorator(lowerRanges, upperRanges, showFilters);
 		final ColorHitCounter counter = new ColorHitCounter(me);
 		decorator.resetColorRead(counter);
 		
 		// grab a frame every 33 ms (30 frames/sec)
 		this.frameGrabber = new FrameGrabber( 
-				new FrameObserver[] {
+				new IFrameObserver[] {
 						new FrameObserver(originalFrame, new SquareFrameDecorator()),
 						new FrameObserver(processedFrame, decorator),
 						new FrameObserver(colorFrame, new ColorFrameDecorator(decorator)),
+						new CubeColorsReader(lowerRanges, upperRanges, showFilters, colorLookup),
 			}, VIDEO_DEVICE_INDEX
 		);
 
