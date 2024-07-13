@@ -20,6 +20,7 @@ public class ProcessedFrameDecorator implements FrameDecorator {
 	private final AtomicIntegerArray lowerRanges;
 	private final AtomicIntegerArray upperRanges;
 	private final AtomicBoolean[] showFilters;
+	private final int[] colorLookup;
 	
 	private ColorHitCounter colorHitCounter = null;
 	
@@ -27,10 +28,12 @@ public class ProcessedFrameDecorator implements FrameDecorator {
 		this.colorHitCounter = colorHitCounter;
 	}
 	
-	public ProcessedFrameDecorator(final AtomicIntegerArray lowerRanges, final AtomicIntegerArray upperRanges, final AtomicBoolean[] showFilters) {
+	public ProcessedFrameDecorator(final AtomicIntegerArray lowerRanges, final AtomicIntegerArray upperRanges, 
+			final AtomicBoolean[] showFilters, final int[] colorLookup) {
 		this.lowerRanges = lowerRanges;
 		this.upperRanges = upperRanges;
 		this.showFilters = showFilters;
+		this.colorLookup = colorLookup;
 	}
 	
 	@Override

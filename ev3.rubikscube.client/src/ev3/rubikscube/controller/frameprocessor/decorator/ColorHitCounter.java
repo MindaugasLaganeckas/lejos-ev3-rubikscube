@@ -15,7 +15,7 @@ import ev3.rubikscube.ui.RubiksCubeColors;
 
 public class ColorHitCounter {
 
-	private static final int EDGE_LENGTH = 150;
+	private static final int EDGE_LENGTH = 130;
 	private static final int NUMBER_OF_POINTS_IN_FACET = 9;
 	public static final int NUMBER_OF_FACETS = 9;
 	private static final int NUMBER_OF_POINTS = NUMBER_OF_FACETS * NUMBER_OF_POINTS_IN_FACET;
@@ -64,7 +64,7 @@ public class ColorHitCounter {
 	
 	private static List<Point> generatePoints(final double x, final double y) {
 		final List<Point> pointsOfInterest = new LinkedList<>();
-		final double edgeLength = 20;
+		final double edgeLength = 50;
 		
 		final Point center = new Point(x, y);
 		

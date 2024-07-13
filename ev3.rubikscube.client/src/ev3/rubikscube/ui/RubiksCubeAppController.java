@@ -4,6 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -20,18 +21,18 @@ import ev3.rubikscube.controller.frameprocessor.FrameGrabber;
 import ev3.rubikscube.controller.frameprocessor.FrameObserver;
 import ev3.rubikscube.controller.frameprocessor.decorator.ColorFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.ColorHitCounter;
-import ev3.rubikscube.controller.frameprocessor.decorator.DottedFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.ProcessedFrameDecorator;
+import ev3.rubikscube.controller.frameprocessor.decorator.SquareFrameDecorator;
 import ev3.rubikscube.controller.readcubecolors.ColorReadControllerForAllSides;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.TilePane;
-import javafx.scene.control.CheckBox;
 
 public class RubiksCubeAppController implements Closeable, PropertyChangeListener {
 
@@ -124,6 +125,8 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	@FXML
 	private TextField robotIp;
 	final ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
+	
+	private boolean readAllStarted = false;
 
 	@FXML TextField turnToMake;
 	@FXML Button turnToMakeButton;
@@ -139,6 +142,7 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	
 	private Runnable frameGrabber;
 	
+	private final int[] colorLookup = new int[255];
 	private final AtomicIntegerArray lowerRanges = new AtomicIntegerArray(5);
 	private final AtomicIntegerArray upperRanges = new AtomicIntegerArray(5);
 	private final AtomicBoolean[] showFilters = new AtomicBoolean[5];
@@ -155,6 +159,17 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		upperRanges.set(CubeColors.YELLOW.ordinal(), (int)yellowHigh.getValue());
 		upperRanges.set(CubeColors.GREEN.ordinal(), (int)greenHigh.getValue());
 		upperRanges.set(CubeColors.BLUE.ordinal(), (int)blueHigh.getValue());
+		
+		Arrays.fill(colorLookup, -1);
+		for (int i = 0; i < lowerRanges.length(); i++) {
+			for (int j = lowerRanges.get(i); j <= upperRanges.get(i); j++) {
+				colorLookup[j] = CubeColors.values()[i].ordinal();
+			}
+		}
+		// extra for the second red color range
+		for (int j = 120; j <= 240; j++) {
+			colorLookup[j] = CubeColors.RED.ordinal();
+		}
 	}
 	
 	@FXML public void turnToMakeButton() throws IOException {
@@ -258,14 +273,14 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		// preserve image ratio
 		colorFrame.setPreserveRatio(true);
 				
-		decorator = new ProcessedFrameDecorator(lowerRanges, upperRanges, showFilters);
+		decorator = new ProcessedFrameDecorator(lowerRanges, upperRanges, showFilters, colorLookup);
 		final ColorHitCounter counter = new ColorHitCounter(me);
 		decorator.resetColorRead(counter);
 		
 		// grab a frame every 33 ms (30 frames/sec)
 		this.frameGrabber = new FrameGrabber( 
 				new FrameObserver[] {
-						new FrameObserver(originalFrame, new DottedFrameDecorator()),
+						new FrameObserver(originalFrame, new SquareFrameDecorator()),
 						new FrameObserver(processedFrame, decorator),
 						new FrameObserver(colorFrame, new ColorFrameDecorator(decorator)),
 			}, VIDEO_DEVICE_INDEX
@@ -325,10 +340,6 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		decorator.resetColorRead(counter);
 	}
 	
-	private boolean readAllStarted = false;
-	/**
-	 * When the read is done, {@link #propertyChange(PropertyChangeEvent)} will be called by {@link #colorHitCounter}
-	 */
 	@FXML
 	protected void readColors() {
 		if (this.client != null) {
@@ -338,7 +349,10 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 			this.readAllStarted = true;
 		}
 	}
-
+	
+	/**
+	 * When the read is done, {@link #propertyChange(PropertyChangeEvent)} will be called by {@link #colorHitCounter}
+	 */
 	@Override
 	public void propertyChange(final PropertyChangeEvent event) {
 		if (!readAllStarted) return;
