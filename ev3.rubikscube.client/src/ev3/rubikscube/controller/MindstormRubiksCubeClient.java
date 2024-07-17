@@ -66,6 +66,11 @@ public class MindstormRubiksCubeClient implements Closeable {
 	
 	public void sendCommand(final String command) throws IOException {
 		System.out.println("Sending " + command);
+		if (!communicationCodes.containsKey(command)) {
+			System.out.println("Unknown command '" + command + "'");
+			return;
+		}
+		
 		final int code = communicationCodes.get(command);
 		dout.write(code);
 		dout.flush();

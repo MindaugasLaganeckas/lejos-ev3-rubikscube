@@ -1,173 +1,152 @@
 package ev3.rubikscube.controller.readcubecolors;
 
-import static ev3.rubikscube.ui.RubiksCubeAppController.RED_COLLOR_LOWER_RANGE2;
+import static ev3.rubikscube.controller.frameprocessor.decorator.ImageProcessingUtils.histogramEqualization;
+import static ev3.rubikscube.controller.frameprocessor.decorator.ImageProcessingUtils.illuminationCompensation;
 import static ev3.rubikscube.ui.RubiksCubeAppController.RED_COLLOR_UPPER_RANGE2;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicIntegerArray;
+import java.util.Set;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.Point;
+import org.opencv.core.MatOfFloat;
+import org.opencv.core.MatOfInt;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-import ev3.rubikscube.controller.frameprocessor.CubeColors;
-import ev3.rubikscube.controller.frameprocessor.decorator.ColorHitCounter;
+import ev3.rubikscube.ui.IColorReadCompletedObserver;
 import ev3.rubikscube.ui.IFrameObserver;
+import ev3.rubikscube.ui.RubiksCubeColors;
 
 public class CubeColorsReader implements IFrameObserver {
-	private final AtomicIntegerArray lowerRanges;
-	private final AtomicIntegerArray upperRanges;
-	private final AtomicBoolean[] showFilters;
+	
+	private static final int EDGE_LENGTH = 130;
+	public static final int NUMBER_OF_FACETS = 9;
+	private static final int TIMES_TO_READ_BEFORE_NOTIFY = 5; // read every facet x times
+	
 	private final int[] colorLookup;
+	private final Set<IColorReadCompletedObserver> observers = new LinkedHashSet<IColorReadCompletedObserver>();
 	
-	private ColorHitCounter colorHitCounter = null;
+	private int currentRead = 0;
+	private boolean colorReadStarted = false;
+	private boolean colorReadFinished = false;
+	private RubiksCubeColors[] colors = null;
 	
-	public synchronized void resetColorRead(final ColorHitCounter colorHitCounter) {
-		this.colorHitCounter = colorHitCounter;
+	public synchronized void startColorRead() {
+		this.currentRead = 0;
+		this.colorReadStarted = true;
+		this.colorReadFinished = false;
+		this.colors = new RubiksCubeColors[NUMBER_OF_FACETS];
 	}
 	
-	public CubeColorsReader(final AtomicIntegerArray lowerRanges, final AtomicIntegerArray upperRanges, 
-			final AtomicBoolean[] showFilters, final int[] colorLookup) {
-		this.lowerRanges = lowerRanges;
-		this.upperRanges = upperRanges;
-		this.showFilters = showFilters;
+	public CubeColorsReader(final int[] colorLookup) {
 		this.colorLookup = colorLookup;
 	}
 	
 	@Override
 	public void update(final Mat input) {
-		final List<List<Point>> pointsForColorTest = ColorHitCounter.calcPointsOfInterest(input.width(), input.height());
-
-		if (!(lowerRanges.length() == upperRanges.length() && upperRanges.length() == CubeColors.values().length)) {
-			throw new IllegalArgumentException();
-		}
-
-		final Mat illuminationCompensation = illuminationCompensation(input);
-		final Mat hsvImage = histogramEqualization(illuminationCompensation);
+		if (!colorReadStarted || colorReadFinished) return;
 		
-		maskedImage(input, hsvImage, pointsForColorTest);
-	}
-	
-	private void checkColor(final int facetIndex, final Mat input, final List<Point> pointsForColorTest, final CubeColors color) {
-		if (getColorHitCounter() != null) {
-			for (final Point p : pointsForColorTest) {
-				double[] hsv = input.get((int)p.y, (int)p.x);
-				if (colorExists(hsv)) {
-					getColorHitCounter().inc(color, facetIndex);
-				}
-			}	
-		}
-	}
-
-	private boolean colorExists(double[] hsv) {
-		return (int)hsv[1] != 0;
-	}
-
-	private Mat maskedImage(final Mat input, final Mat hsvImage, final List<List<Point>> pointsForColorTest) {
-		
-		final Mat result = Mat.zeros(input.rows(), input.cols(), input.type());
-		final List<Mat> colorAreas = new LinkedList<Mat>();
-		
-		// RED color has two ranges to check for
-		{
-			final int redColorIndex = CubeColors.RED.ordinal();
-	        // Define the range of red color in HSV
-			final Scalar lowerRed1 = new Scalar(lowerRanges.get(redColorIndex), 50, 50);
-			final Scalar upperRed1 = new Scalar(upperRanges.get(redColorIndex), 255, 255);
-			final Scalar lowerRed2 = new Scalar(RED_COLLOR_LOWER_RANGE2, 50, 50);
-			final Scalar upperRed2 = new Scalar(RED_COLLOR_UPPER_RANGE2, 255, 255);
+		if (currentRead < TIMES_TO_READ_BEFORE_NOTIFY) {
+			currentRead++;
 			
-	        // Threshold the HSV image to get only red colors
-	        final Mat mask1 = new Mat();
-	        Core.inRange(hsvImage, lowerRed1, upperRed1, mask1);
-	        final Mat mask2 = new Mat();
-	        Core.inRange(hsvImage, lowerRed2, upperRed2, mask2);
-	        // Combine the masks
-	        final Mat redMask = new Mat();
-	        Core.add(mask1, mask2, redMask);
-	        
-	        // Bitwise-AND mask and original image
-	        final Mat redAreas = new Mat();
-	        Core.bitwise_and(input, input, redAreas, redMask);
-	        
-	        if (showFilters[redColorIndex].get()) {
-	        	Core.bitwise_or(redAreas, result, result);
+			final Mat illuminationCompensation = illuminationCompensation(input);
+			final Mat histogramEqualizationProcessedHsvImage = histogramEqualization(illuminationCompensation);
+			final List<Rect> areasForColorTest = calcAreasOfInterest(input.width(), input.height());
+			for (int faceIndex = 0; faceIndex < areasForColorTest.size(); faceIndex++) {
+				final Rect rect = areasForColorTest.get(faceIndex);
+				final Mat croppedImage = new Mat(histogramEqualizationProcessedHsvImage, rect);
+		        final List<Mat> channels = new ArrayList<>();
+		        Core.split(croppedImage, channels);
+		        
+		        // Create a mask for pixels with Saturation and Value between 50 and 255
+		        final Mat mask = new Mat();
+		        Core.inRange(croppedImage, new Scalar(0, 50, 50), new Scalar(RED_COLLOR_UPPER_RANGE2, 255, 255), mask);
+		        
+		        // Compute histograms for each channel (Hue, Saturation, Value)
+		        final MatOfInt histSize = new MatOfInt(256);
+		        final MatOfFloat histRange = new MatOfFloat(0f, 256f);
+		        final boolean accumulate = false;
+
+		        final Mat histHue = new Mat();
+		        
+		        Imgproc.calcHist(Arrays.asList(channels.get(0)), new MatOfInt(0), mask, histHue, histSize, histRange, accumulate);
+		        
+		        final float[] histHueArray = new float[(int) histHue.total()];
+		        histHue.get(0, 0, histHueArray);
+		        
+		        this.colors[faceIndex] = getDominantColor(histHueArray, colorLookup, croppedImage.rows() * croppedImage.cols());
 			}
-	        colorAreas.add(redAreas);
+			System.out.println();
+		} else {
+			for (final IColorReadCompletedObserver observer : observers) {
+				observer.colorReadCompleted(this.colors);
+			}
+			colorReadFinished = true;
 		}
-		// RED is the first color in color and we have already checked for it
-		for (int i = 1; i < CubeColors.values().length; i++) {
-			final Scalar lowerRange = new Scalar(lowerRanges.get(i), 50, 50);
-			final Scalar upperRange = new Scalar(upperRanges.get(i), 255, 255);
-			
-			final Mat mask = new Mat();
-	        Core.inRange(hsvImage, lowerRange, upperRange, mask);
-	        
-	        final Mat areas = new Mat();
-	        Core.bitwise_and(input, input, areas, mask);
-	        if (showFilters[i].get()) {
-	        	Core.bitwise_or(areas, result, result);
+	}
+	
+	private static RubiksCubeColors getDominantColor(final float[] histHueArray, final int[] colorLookup, final int totalPixels) {
+		final int[] colorFrequency = new int[RubiksCubeColors.values().length];
+		for (int hueValue = 0; hueValue < histHueArray.length; hueValue++) {
+        	final int hueValueFrequencey = (int) histHueArray[hueValue];
+        	if (hueValueFrequencey > 0) {
+        		colorFrequency[colorLookup[hueValue]] += hueValueFrequencey;
+        	}
+        }
+		RubiksCubeColors mostFrequentColor = null;
+		int mostFrequentColorCount = 0;
+		for (int colorIndex = 0; colorIndex < colorFrequency.length; colorIndex++) {
+			if (mostFrequentColorCount < colorFrequency[colorIndex]) {
+				mostFrequentColorCount = colorFrequency[colorIndex];
+				mostFrequentColor = RubiksCubeColors.values()[colorIndex];
 			}
-	        
-	        colorAreas.add(areas);
 		}
 		
-		for (int facetIndex = 0; facetIndex < pointsForColorTest.size(); facetIndex++) {
-			final List<Point> facetTestPoints = pointsForColorTest.get(facetIndex);
-			for (int colorIndex = 0; colorIndex < CubeColors.values().length; colorIndex++) {
-				final CubeColors color = CubeColors.values()[colorIndex];
-				checkColor(facetIndex, colorAreas.get(colorIndex), facetTestPoints, color);
-			}
+		final double mostFrequentColorCountPercentage = mostFrequentColorCount * 1.0 / totalPixels;
+		System.out.print(mostFrequentColor + ": " + (mostFrequentColorCountPercentage * 100) + "%   ");
+		
+		if (Double.compare(mostFrequentColorCountPercentage, 0.3) > 0) {
+			return mostFrequentColor;
 		}
-
-		return result;
+		return RubiksCubeColors.WHITE;
 	}
 	
-	private static Mat histogramEqualization(final Mat input) {
-		final Mat hsvImage = new Mat();
-        Imgproc.cvtColor(input, hsvImage, Imgproc.COLOR_BGR2HSV);
-        Core.normalize(hsvImage, hsvImage, 0, 255, Core.NORM_MINMAX);
-
-        // Split the HSV image into its channels
-        final List<Mat> hsvChannels = new ArrayList<>();
-        Core.split(hsvImage, hsvChannels);
-
-        // Equalize the histogram of the V channel
-        Imgproc.equalizeHist(hsvChannels.get(2), hsvChannels.get(2));
-
-        // Merge the channels back
-        Core.merge(hsvChannels, hsvImage);
-        return hsvImage;
+	public static List<Rect> calcAreasOfInterest(final int frameWidth, final int frameHeight) {
+		final List<Rect> pointsOfInterest = new LinkedList<>();
+		final int x = frameWidth / 2;
+		final int y = frameHeight / 2;
+		
+		pointsOfInterest.add(generatePoints(x - EDGE_LENGTH, y - EDGE_LENGTH));
+		pointsOfInterest.add(generatePoints(x, y - EDGE_LENGTH));
+		pointsOfInterest.add(generatePoints(x + EDGE_LENGTH, y - EDGE_LENGTH));
+		
+		pointsOfInterest.add(generatePoints(x - EDGE_LENGTH, y));
+		pointsOfInterest.add(generatePoints(x, y));
+		pointsOfInterest.add(generatePoints(x + EDGE_LENGTH, y));
+		
+		pointsOfInterest.add(generatePoints(x - EDGE_LENGTH, y + EDGE_LENGTH));
+		pointsOfInterest.add(generatePoints(x, y + EDGE_LENGTH));
+		pointsOfInterest.add(generatePoints(x + EDGE_LENGTH, y + EDGE_LENGTH));
+		
+		return pointsOfInterest;
 	}
 	
-	private static Mat illuminationCompensation(final Mat image) {
-        // Convert the image to LAB color space
-		final Mat clone = image.clone();
-        final Mat labImage = new Mat();
-        Imgproc.cvtColor(clone, labImage, Imgproc.COLOR_BGR2Lab);
-
-        // Split the LAB image into its channels
-        final List<Mat> labChannels = new ArrayList<>();
-        Core.split(labImage, labChannels);
-
-        // Apply histogram equalization to the L channel
-        Imgproc.equalizeHist(labChannels.get(0), labChannels.get(0));
-
-        // Merge the channels back
-        Core.merge(labChannels, labImage);
-
-        // Convert back to BGR color space
-        Imgproc.cvtColor(labImage, clone, Imgproc.COLOR_Lab2BGR);
-
-        return clone;
+	private static Rect generatePoints(final int x, final int y) {
+		final int edgeLength = 50;
+		return new Rect(x, y, edgeLength, edgeLength);
 	}
 
-	public ColorHitCounter getColorHitCounter() {
-		return colorHitCounter;
+	public void subscribe(final IColorReadCompletedObserver observer) {
+		this.observers.add(observer);
+	}
+	
+	public void unsubscribe(final IColorReadCompletedObserver observer) {
+		this.observers.remove(observer);
 	}
 }

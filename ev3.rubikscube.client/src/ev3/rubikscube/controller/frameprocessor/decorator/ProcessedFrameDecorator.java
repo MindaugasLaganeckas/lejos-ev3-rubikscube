@@ -1,6 +1,10 @@
 package ev3.rubikscube.controller.frameprocessor.decorator;
 
-import java.util.ArrayList;
+import static ev3.rubikscube.controller.frameprocessor.decorator.ImageProcessingUtils.histogramEqualization;
+import static ev3.rubikscube.controller.frameprocessor.decorator.ImageProcessingUtils.illuminationCompensation;
+import static ev3.rubikscube.ui.RubiksCubeAppController.RED_COLLOR_LOWER_RANGE2;
+import static ev3.rubikscube.ui.RubiksCubeAppController.RED_COLLOR_UPPER_RANGE2;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -8,27 +12,17 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import ev3.rubikscube.controller.frameprocessor.CubeColors;
 import ev3.rubikscube.controller.frameprocessor.FrameDecorator;
 
-import static ev3.rubikscube.ui.RubiksCubeAppController.RED_COLLOR_LOWER_RANGE2;
-import static ev3.rubikscube.ui.RubiksCubeAppController.RED_COLLOR_UPPER_RANGE2;
-
 public class ProcessedFrameDecorator implements FrameDecorator {
 
 	private final AtomicIntegerArray lowerRanges;
 	private final AtomicIntegerArray upperRanges;
 	private final AtomicBoolean[] showFilters;
-	
-	private ColorHitCounter colorHitCounter = null;
-	
-	public synchronized void resetColorRead(final ColorHitCounter colorHitCounter) {
-		this.colorHitCounter = colorHitCounter;
-	}
 	
 	public ProcessedFrameDecorator(final AtomicIntegerArray lowerRanges, final AtomicIntegerArray upperRanges, 
 			final AtomicBoolean[] showFilters) {
@@ -39,8 +33,6 @@ public class ProcessedFrameDecorator implements FrameDecorator {
 	
 	@Override
 	public Mat decorate(final Mat input) {
-		final List<List<Point>> pointsForColorTest = ColorHitCounter.calcPointsOfInterest(input.width(), input.height());
-
 		if (!(lowerRanges.length() == upperRanges.length() && upperRanges.length() == CubeColors.values().length)) {
 			throw new IllegalArgumentException();
 		}
@@ -48,7 +40,7 @@ public class ProcessedFrameDecorator implements FrameDecorator {
 		final Mat illuminationCompensation = illuminationCompensation(input);
 		final Mat hsvImage = histogramEqualization(illuminationCompensation);
 		
-		final Mat maskedImage = maskedImage(input, hsvImage, pointsForColorTest);
+		final Mat maskedImage = maskedImage(input, hsvImage);
 		if (!maskedImage.empty()) {
 			return maskedImage;	
 		}
@@ -56,22 +48,7 @@ public class ProcessedFrameDecorator implements FrameDecorator {
 		return hsvImage;
 	}
 	
-	private void checkColor(final int facetIndex, final Mat input, final List<Point> pointsForColorTest, final CubeColors color) {
-		if (getColorHitCounter() != null) {
-			for (final Point p : pointsForColorTest) {
-				double[] hsv = input.get((int)p.y, (int)p.x);
-				if (colorExists(hsv)) {
-					getColorHitCounter().inc(color, facetIndex);
-				}
-			}	
-		}
-	}
-
-	private boolean colorExists(double[] hsv) {
-		return (int)hsv[1] != 0;
-	}
-
-	private Mat maskedImage(final Mat input, final Mat hsvImage, final List<List<Point>> pointsForColorTest) {
+	private Mat maskedImage(final Mat input, final Mat hsvImage) {
 		
 		final Mat result = Mat.zeros(input.rows(), input.cols(), input.type());
 		final List<Mat> colorAreas = new LinkedList<Mat>();
@@ -120,57 +97,6 @@ public class ProcessedFrameDecorator implements FrameDecorator {
 	        colorAreas.add(areas);
 		}
 		
-		for (int facetIndex = 0; facetIndex < pointsForColorTest.size(); facetIndex++) {
-			final List<Point> facetTestPoints = pointsForColorTest.get(facetIndex);
-			for (int colorIndex = 0; colorIndex < CubeColors.values().length; colorIndex++) {
-				final CubeColors color = CubeColors.values()[colorIndex];
-				checkColor(facetIndex, colorAreas.get(colorIndex), facetTestPoints, color);
-			}
-		}
-
 		return result;
-	}
-	
-	private static Mat histogramEqualization(final Mat input) {
-		final Mat hsvImage = new Mat();
-        Imgproc.cvtColor(input, hsvImage, Imgproc.COLOR_BGR2HSV);
-        Core.normalize(hsvImage, hsvImage, 0, 255, Core.NORM_MINMAX);
-
-        // Split the HSV image into its channels
-        final List<Mat> hsvChannels = new ArrayList<>();
-        Core.split(hsvImage, hsvChannels);
-
-        // Equalize the histogram of the V channel
-        Imgproc.equalizeHist(hsvChannels.get(2), hsvChannels.get(2));
-
-        // Merge the channels back
-        Core.merge(hsvChannels, hsvImage);
-        return hsvImage;
-	}
-	
-	private static Mat illuminationCompensation(final Mat image) {
-        // Convert the image to LAB color space
-		final Mat clone = image.clone();
-        final Mat labImage = new Mat();
-        Imgproc.cvtColor(clone, labImage, Imgproc.COLOR_BGR2Lab);
-
-        // Split the LAB image into its channels
-        final List<Mat> labChannels = new ArrayList<>();
-        Core.split(labImage, labChannels);
-
-        // Apply histogram equalization to the L channel
-        Imgproc.equalizeHist(labChannels.get(0), labChannels.get(0));
-
-        // Merge the channels back
-        Core.merge(labChannels, labImage);
-
-        // Convert back to BGR color space
-        Imgproc.cvtColor(labImage, clone, Imgproc.COLOR_Lab2BGR);
-
-        return clone;
-	}
-
-	public ColorHitCounter getColorHitCounter() {
-		return colorHitCounter;
 	}
 }

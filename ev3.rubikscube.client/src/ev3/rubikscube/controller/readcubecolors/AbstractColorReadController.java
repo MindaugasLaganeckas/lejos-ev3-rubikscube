@@ -1,13 +1,17 @@
 package ev3.rubikscube.controller.readcubecolors;
 
 import java.io.IOException;
+import java.util.Map;
 
 import ev3.rubikscube.controller.MindstormRubiksCubeClient;
+import ev3.rubikscube.ui.IColorReadCompletedObserver;
+import ev3.rubikscube.ui.RubiksCubePlate;
 
-public abstract class AbstractColorReadController implements IColorReadController {
+public abstract class AbstractColorReadController implements IColorReadController, IColorReadCompletedObserver {
 
 	protected int currentFaceIndex = 0;
 	protected boolean startSequenceInitialized = false;
+	protected final Map<String, RubiksCubePlate> kubeColors;
 	
 	/**
 	 * Camera is facing first back 'B' side and then rotating U --> B etc
@@ -16,8 +20,9 @@ public abstract class AbstractColorReadController implements IColorReadControlle
 	
 	protected final MindstormRubiksCubeClient mindstormRubiksCubeClient;
 	
-	public AbstractColorReadController(final MindstormRubiksCubeClient client) {
+	public AbstractColorReadController(final MindstormRubiksCubeClient client, final Map<String, RubiksCubePlate> kubeColors) {
 		this.mindstormRubiksCubeClient = client;
+		this.kubeColors = kubeColors;
 	}
 	
 	protected char getSideName() {

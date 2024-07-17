@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -20,11 +19,11 @@ import ev3.rubikscube.controller.frameprocessor.CubeColors;
 import ev3.rubikscube.controller.frameprocessor.FrameGrabber;
 import ev3.rubikscube.controller.frameprocessor.FrameObserver;
 import ev3.rubikscube.controller.frameprocessor.decorator.ColorFrameDecorator;
-import ev3.rubikscube.controller.frameprocessor.decorator.ColorHitCounter;
 import ev3.rubikscube.controller.frameprocessor.decorator.ProcessedFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.SquareFrameDecorator;
 import ev3.rubikscube.controller.readcubecolors.ColorReadControllerForAllSides;
 import ev3.rubikscube.controller.readcubecolors.CubeColorsReader;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
@@ -73,6 +72,8 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	
 	private String solutionStr;
 	
+	private final ColorFrameDecorator colorFrameDecorator = new ColorFrameDecorator();
+	
 	@FXML
 	private TilePane cubeMap;
 	@FXML
@@ -112,6 +113,8 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	@FXML
 	private Button readColorsButton;
 	@FXML
+	private Button solveItButton;
+	@FXML
 	private Button turnRubiksCubeButton;
 	@FXML
 	private Button sendSolutionToRobot;
@@ -127,10 +130,7 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	private Label connectionStatus;
 	@FXML
 	private TextField robotIp;
-	final ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
 	
-	private boolean readAllStarted = false;
-
 	@FXML TextField turnToMake;
 	@FXML Button turnToMakeButton;
 	@FXML CheckBox debugMode;
@@ -145,10 +145,14 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	
 	private Runnable frameGrabber;
 	
+	private CubeColorsReader colorsReader = null;
+	
 	private final int[] colorLookup = new int[255];
 	private final AtomicIntegerArray lowerRanges = new AtomicIntegerArray(5);
 	private final AtomicIntegerArray upperRanges = new AtomicIntegerArray(5);
 	private final AtomicBoolean[] showFilters = new AtomicBoolean[5];
+	
+	private boolean solveItModeEnabled = false;
 	
 	public void initRanges() {
 		lowerRanges.set(CubeColors.RED.ordinal(), (int)redLow.getValue());
@@ -163,7 +167,8 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		upperRanges.set(CubeColors.GREEN.ordinal(), (int)greenHigh.getValue());
 		upperRanges.set(CubeColors.BLUE.ordinal(), (int)blueHigh.getValue());
 		
-		Arrays.fill(colorLookup, -1);
+		// white by default
+		Arrays.fill(colorLookup, RubiksCubeColors.WHITE.ordinal());
 		for (int i = 0; i < lowerRanges.length(); i++) {
 			for (int j = lowerRanges.get(i); j <= upperRanges.get(i); j++) {
 				colorLookup[j] = CubeColors.values()[i].ordinal();
@@ -239,7 +244,13 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 			System.out.println(color + " " + faceletCheck[color.ordinal()]);
 		}
 		solutionStr = solverClient.solve(scrambledCube.toString());
-		this.solution.setText("Solution: " + solutionStr);
+		
+		Platform.runLater(new Runnable() {
+		    @Override
+		    public void run() {
+		    	solution.setText("Solution: " + solutionStr);
+		    }
+		});
 	}
 	
 	@FXML
@@ -247,17 +258,13 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		final String[] commands = solutionStr.split("\\s+");
 		int currentTurn = 0;
 		for (final String turn : commands) {
-			client.sendCommand(turn);
-			currentTurn++;
-			System.out.println(String.format("%.2f", currentTurn * 1.0/commands.length * 1.0));
+			if (!"".equals(turn)) {
+				client.sendCommand(turn);
+				currentTurn++;
+				System.out.println(String.format("Completed %.2f", currentTurn * 100/commands.length * 1.0));
+			}
 		}
 	}
-	
-	/**
-	 * The action triggered by pushing the button on the GUI
-	 * @throws IOException 
-	 */
-	private ProcessedFrameDecorator decorator;
 	
 	@FXML
 	protected void startCamera() throws IOException {
@@ -276,17 +283,16 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		// preserve image ratio
 		colorFrame.setPreserveRatio(true);
 				
-		decorator = new ProcessedFrameDecorator(lowerRanges, upperRanges, showFilters);
-		final ColorHitCounter counter = new ColorHitCounter(me);
-		decorator.resetColorRead(counter);
+		this.colorsReader = new CubeColorsReader(colorLookup);
+		this.colorsReader.subscribe(colorFrameDecorator);
 		
 		// grab a frame every 33 ms (30 frames/sec)
 		this.frameGrabber = new FrameGrabber( 
 				new IFrameObserver[] {
 						new FrameObserver(originalFrame, new SquareFrameDecorator()),
-						new FrameObserver(processedFrame, decorator),
-						new FrameObserver(colorFrame, new ColorFrameDecorator(decorator)),
-						new CubeColorsReader(lowerRanges, upperRanges, showFilters, colorLookup),
+						new FrameObserver(processedFrame, new ProcessedFrameDecorator(lowerRanges, upperRanges, showFilters)),
+						new FrameObserver(colorFrame, colorFrameDecorator),
+						this.colorsReader,
 			}, VIDEO_DEVICE_INDEX
 		);
 
@@ -340,42 +346,47 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	
 	@FXML
 	protected void readCurrentSide() {
-		final ColorHitCounter counter = new ColorHitCounter(me);
-		decorator.resetColorRead(counter);
+		this.colorsReader.startColorRead();
 	}
 	
 	@FXML
 	protected void readColors() {
 		if (this.client != null) {
-			this.colorReadController = new ColorReadControllerForAllSides(this.client, me, decorator);
+			this.colorReadController = new ColorReadControllerForAllSides(this.client, me, this.colorsReader, kubeColors, 
+					new IColorReadStartedObserver[] {colorFrameDecorator});
+			this.colorsReader.subscribe(colorReadController);
 			this.readColorsButton.setDisable(true);
+			this.solveItButton.setDisable(true);
 			this.colorReadController.startRead();
-			this.readAllStarted = true;
 		}
 	}
 	
-	/**
-	 * When the read is done, {@link #propertyChange(PropertyChangeEvent)} will be called by {@link #colorHitCounter}
-	 */
 	@Override
 	public void propertyChange(final PropertyChangeEvent event) {
-		if (!readAllStarted) return;
-		
 		if (event.getSource() == me) {
-			System.out.println("we are done reading");
-			this.readColorsButton.setDisable(false);
-			return;
-		}
-		if (event.getSource() instanceof ColorHitCounter) {
-			newSingleThreadExecutor.execute(new Runnable() {
-				@Override
-				public void run() {
-					colorReadController.colorReadCompleted(kubeColors, (ColorHitCounter) event.getSource());
-					colorReadController.turnToNextFace();
+			System.out.println("Time taken to read cube colors: " + formatDuration(System.currentTimeMillis() - startTime));
+			if (solveItModeEnabled) {
+				try {
+					calculateSolution();
+					sendSolutionToRobot();
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
-			});
+			}
+			this.readColorsButton.setDisable(false);
+			this.colorsReader.unsubscribe(colorReadController);
+			this.solveItButton.setDisable(false);
+			
+			System.out.println("Time taken to solve the cube: " + formatDuration(System.currentTimeMillis() - startTime));
 		}
 	}
+	
+	public static String formatDuration(long durationMillis) {
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(durationMillis);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(durationMillis) -
+                       TimeUnit.MINUTES.toSeconds(minutes);
+        return String.format("%d minutes, %d seconds", minutes, seconds);
+    }
 	
 	private Map<String, RubiksCubePlate> drawCubeMap() {
 		final Map<String, RubiksCubePlate> kubeColors = new HashMap<>();
@@ -401,6 +412,17 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		    	index++;
 		    }
 		}
+		
+		kubeColors.get("R5").setColor(RubiksCubeColors.YELLOW);
+		kubeColors.get("L5").setColor(RubiksCubeColors.WHITE);
 		return kubeColors;
+	}
+
+	private long startTime = 0;
+	
+	@FXML public void solveIt() {
+		solveItModeEnabled = true;
+		this.startTime = System.currentTimeMillis();
+		readColors();
 	}
 }

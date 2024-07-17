@@ -2,15 +2,16 @@ package ev3.rubikscube.controller.readcubecolors;
 import java.io.IOException;
 import java.util.Map;
 
+import static ev3.rubikscube.controller.readcubecolors.CubeColorsReader.NUMBER_OF_FACETS;
+
 import ev3.rubikscube.controller.MindstormRubiksCubeClient;
-import ev3.rubikscube.controller.frameprocessor.decorator.ColorHitCounter;
 import ev3.rubikscube.ui.RubiksCubeColors;
 import ev3.rubikscube.ui.RubiksCubePlate;
 
 public class ColorReadControllerForSides extends AbstractColorReadController {
 
-	public ColorReadControllerForSides(MindstormRubiksCubeClient client) {
-		super(client);
+	public ColorReadControllerForSides(final MindstormRubiksCubeClient client, final Map<String, RubiksCubePlate> kubeColors) {
+		super(client, kubeColors);
 	}
 
 	@Override
@@ -38,13 +39,10 @@ public class ColorReadControllerForSides extends AbstractColorReadController {
 	}
 	
 	@Override
-	public void colorReadCompleted(final Map<String, RubiksCubePlate> kubeColors, final ColorHitCounter colorHitCounter) {
+	public void colorReadCompleted(final RubiksCubeColors[] faceColors) {
 		if (!hasNextFaceToRead()) return;
-		
-		final RubiksCubeColors[] faceColors = new RubiksCubeColors[ColorHitCounter.NUMBER_OF_FACETS];
-		for (int i = 0; i < ColorHitCounter.NUMBER_OF_FACETS; i++) {
-			faceColors[i] = colorHitCounter.get(i);
-			System.out.print(colorHitCounter.get(i).name() + " ");
+		for (int i = 0; i < NUMBER_OF_FACETS; i++) {
+			System.out.print(faceColors[i].name() + " ");
 		}
 		System.out.println();
 		final char sideCode = getSideName();

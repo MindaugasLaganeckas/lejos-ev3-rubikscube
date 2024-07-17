@@ -41,7 +41,7 @@
                                     <Insets top="10.0" />
                                  </VBox.margin>
                               </Label>
-                              <Label fx:id="connectionStatus1" text="Camera index">
+                              <Label fx:id="cameraIndexLabel" text="Camera index">
                                  <VBox.margin>
                                     <Insets top="10.0" />
                                  </VBox.margin>
@@ -55,6 +55,18 @@
                                  <VBox.margin>
                                     <Insets top="10.0" />
                                  </VBox.margin></Button>
+                        <Button fx:id="solveItButton" alignment="CENTER" disable="false" onAction="#solveIt" text="Solve it!">
+                                 <VBox.margin>
+                                    <Insets top="10.0" />
+                                 </VBox.margin></Button>
+                        <Button fx:id="readColorsButton" alignment="CENTER" disable="true" onAction="#readColors" text="Read all">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                                 <VBox.margin>
+                                    <Insets top="10.0" />
+                                 </VBox.margin>
+                        </Button>
                         <Button fx:id="calculateSolution" alignment="CENTER" disable="false" onAction="#calculateSolution" text="Calculate solution">
                                  <VBox.margin>
                                     <Insets top="10.0" />
@@ -72,14 +84,6 @@
                                     <Insets top="10.0" />
                                  </VBox.margin>
                               </Button>
-                              <Button fx:id="turnRubiksCubeButton" alignment="CENTER" disable="true" onAction="#turnRubiksCube" text="Turn Rubiks cube">
-                                 <opaqueInsets>
-                                    <Insets />
-                                 </opaqueInsets>
-                                 <VBox.margin>
-                                    <Insets top="10.0" />
-                                 </VBox.margin>
-                              </Button>
                               <Button fx:id="readCurrentSideButton" alignment="CENTER" onAction="#readCurrentSide" text="Read current side">
                                  <opaqueInsets>
                                     <Insets />
@@ -88,7 +92,7 @@
                                     <Insets top="10.0" />
                                  </VBox.margin>
                               </Button> 
-                              <Button fx:id="readColorsButton" alignment="CENTER" disable="true" onAction="#readColors" text="Read all">
+                              <Button fx:id="turnRubiksCubeButton" alignment="CENTER" disable="true" onAction="#turnRubiksCube" text="Turn Rubiks cube">
                                  <opaqueInsets>
                                     <Insets />
                                  </opaqueInsets>
