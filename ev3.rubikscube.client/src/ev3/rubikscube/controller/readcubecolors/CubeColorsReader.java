@@ -36,12 +36,14 @@ public class CubeColorsReader implements IFrameObserver {
 	private boolean colorReadStarted = false;
 	private boolean colorReadFinished = false;
 	private RubiksCubeColors[] colors = null;
+	private Double[] percentages = null;
 	
 	public synchronized void startColorRead() {
 		this.currentRead = 0;
 		this.colorReadStarted = true;
 		this.colorReadFinished = false;
 		this.colors = new RubiksCubeColors[NUMBER_OF_FACETS];
+		this.percentages = new Double[NUMBER_OF_FACETS];
 	}
 	
 	public CubeColorsReader(final int[] colorLookup) {
@@ -80,7 +82,10 @@ public class CubeColorsReader implements IFrameObserver {
 		        final float[] histHueArray = new float[(int) histHue.total()];
 		        histHue.get(0, 0, histHueArray);
 		        
-		        this.colors[faceIndex] = getDominantColor(histHueArray, colorLookup, croppedImage.rows() * croppedImage.cols());
+		        final Pair pair = getDominantColor(histHueArray, colorLookup, croppedImage.rows() * croppedImage.cols());
+		        if (percentages[faceIndex] == null || Double.compare(pair.percentage, percentages[faceIndex]) > 0) {
+		        	this.colors[faceIndex] = pair.color;	
+		        }
 			}
 			System.out.println();
 		} else {
@@ -91,7 +96,7 @@ public class CubeColorsReader implements IFrameObserver {
 		}
 	}
 	
-	private static RubiksCubeColors getDominantColor(final float[] histHueArray, final int[] colorLookup, final int totalPixels) {
+	private static Pair getDominantColor(final float[] histHueArray, final int[] colorLookup, final int totalPixels) {
 		final int[] colorFrequency = new int[RubiksCubeColors.values().length];
 		for (int hueValue = 0; hueValue < histHueArray.length; hueValue++) {
         	final int hueValueFrequencey = (int) histHueArray[hueValue];
@@ -112,9 +117,9 @@ public class CubeColorsReader implements IFrameObserver {
 		System.out.print(mostFrequentColor + ": " + (mostFrequentColorCountPercentage * 100) + "%   ");
 		
 		if (Double.compare(mostFrequentColorCountPercentage, 0.3) > 0) {
-			return mostFrequentColor;
+			return new Pair(mostFrequentColor, mostFrequentColorCountPercentage);
 		}
-		return RubiksCubeColors.WHITE;
+		return new Pair(RubiksCubeColors.WHITE, 100d);
 	}
 	
 	public static List<Rect> calcAreasOfInterest(final int frameWidth, final int frameHeight) {
@@ -148,5 +153,15 @@ public class CubeColorsReader implements IFrameObserver {
 	
 	public void unsubscribe(final IColorReadCompletedObserver observer) {
 		this.observers.remove(observer);
+	}
+	
+	private static class Pair {
+		private final RubiksCubeColors color;
+		private final Double percentage;
+		
+		Pair(final RubiksCubeColors color, final Double percentage) {
+			this.color = color;
+			this.percentage = percentage;
+		}
 	}
 }

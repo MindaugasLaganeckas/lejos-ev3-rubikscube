@@ -7,9 +7,11 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-import ev3.rubikscube.fork.ForkState;
-import ev3.rubikscube.fork.ForkStateController;
 import ev3.rubikscube.moves.*;
+import ev3.rubikscube.statecontrollers.ForkState;
+import ev3.rubikscube.statecontrollers.ForkStateController;
+import ev3.rubikscube.statecontrollers.CubeSideController;
+import ev3.rubikscube.statecontrollers.CubeSideState;
 import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
 import lejos.hardware.lcd.Font;
@@ -60,6 +62,7 @@ public class Server {
 	private static final RegulatedMotor forkMotor = Motor.B;
 	private static final RegulatedMotor backMotor = Motor.C;
 	private static final ForkStateController forkStateController = new ForkStateController(ForkState.OFF, backMotor);
+	private static CubeSideController cubeStateController;
 	
 	private static final int port = 3333;
 	
@@ -123,7 +126,7 @@ public class Server {
 	private static void initBigMotor(final RegulatedMotor motor) {
 		motor.resetTachoCount();
 		motor.rotateTo(0);
-		motor.setSpeed(400);
+		motor.setSpeed(700);
 		motor.setAcceleration(800);
 	}
 
@@ -132,17 +135,19 @@ public class Server {
 		final Up up = new Up(forkStateController);
 		final Up2 up2 = new Up2(forkStateController);
 		final Down down = new Down(forkStateController);
-		final F f = new F(forkStateController);
+		cubeStateController = new CubeSideController(CubeSideState.F, up, up2, down);
+		
+		final F f = new F(cubeStateController, forkStateController);
 		final Fi fi = new Fi(f);
 		final F2 f2 = new F2(f);
 
-		moveMap.put("B", new B(up2, f));
-		moveMap.put("B2", new B2(up2, f2));
-		moveMap.put("B'", new Bi(up2, fi));
+		moveMap.put("B", new B(cubeStateController, f));
+		moveMap.put("B2", new B2(cubeStateController, f2));
+		moveMap.put("B'", new Bi(cubeStateController, fi));
 
-		moveMap.put("D", new D(up, down, f));
-		moveMap.put("D2", new D2(up, down, f2));
-		moveMap.put("D'", new Di(up, down, fi));
+		moveMap.put("D", new D(cubeStateController, f));
+		moveMap.put("D2", new D2(cubeStateController, f2));
+		moveMap.put("D'", new Di(cubeStateController, fi));
 
 		moveMap.put("F", f);
 		moveMap.put("F2", f2);
@@ -156,9 +161,9 @@ public class Server {
 		moveMap.put("R2", new R2(forkStateController));
 		moveMap.put("R'", new Ri(forkStateController));
 
-		moveMap.put("U", new U(up, down, f));
-		moveMap.put("U2", new U2(up, down, f2));
-		moveMap.put("U'", new Ui(up, down, fi));
+		moveMap.put("U", new U(cubeStateController, f));
+		moveMap.put("U2", new U2(cubeStateController, f2));
+		moveMap.put("U'", new Ui(cubeStateController, fi));
 		
 		moveMap.put("UP", up);
 		moveMap.put("DOWN", down);

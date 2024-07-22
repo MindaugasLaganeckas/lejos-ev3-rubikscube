@@ -1,4 +1,4 @@
-package ev3.rubikscube.fork;
+package ev3.rubikscube.statecontrollers;
 
 import lejos.robotics.RegulatedMotor;
 

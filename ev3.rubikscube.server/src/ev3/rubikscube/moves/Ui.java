@@ -1,24 +1,22 @@
 package ev3.rubikscube.moves;
 
 import ev3.rubikscube.server.Move;
+import ev3.rubikscube.statecontrollers.CubeSideController;
+import ev3.rubikscube.statecontrollers.CubeSideState;
 
 public class Ui implements Move {
 
-	private final Up upToFront;
-	private final Down bottomToFront;
+	private final CubeSideController controller;
 	private final Fi fi;
 	
-	public Ui(final Up upToFront, final Down bottomToFront, final Fi fi) {
-		this.upToFront = upToFront;
-		this.bottomToFront = bottomToFront;
+	public Ui(final CubeSideController controller, final Fi fi) {
+		this.controller = controller;
 		this.fi = fi;
 	}
 
 	@Override
 	public void action() {
-		upToFront.action();
+		controller.setDesiredState(CubeSideState.U);
 		fi.action();
-		bottomToFront.action();
 	}
-
 }

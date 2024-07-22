@@ -1,22 +1,22 @@
 package ev3.rubikscube.moves;
 
 import ev3.rubikscube.server.Move;
+import ev3.rubikscube.statecontrollers.CubeSideController;
+import ev3.rubikscube.statecontrollers.CubeSideState;
 
 public class Bi implements Move {
 
-	private final Up2 up2;
+	private final CubeSideController controller;
 	private final Fi fi;
 	
-	public Bi(final Up2 up2, final Fi fi) {
-		this.up2 = up2;
+	public Bi(final CubeSideController controller, final Fi fi) {
+		this.controller = controller;
 		this.fi = fi;
 	}
 
 	@Override
 	public void action() {
-		up2.action();
+		controller.setDesiredState(CubeSideState.B);
 		fi.action();
-		up2.action();
 	}
-
 }
