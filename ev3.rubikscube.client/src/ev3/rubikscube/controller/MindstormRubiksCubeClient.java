@@ -45,6 +45,8 @@ public class MindstormRubiksCubeClient implements Closeable {
 		put("UP", 19);
 		put("DOWN", 20);
 		
+		put("COMPLETED", 21);
+		
 		put(COMMAND_FINISH, 100);
 	}};
 	

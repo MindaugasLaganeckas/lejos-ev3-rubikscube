@@ -183,6 +183,11 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	@FXML public void turnToMakeButton() throws IOException {
 		if (client != null) {
 			client.sendCommand(turnToMake.getText());
+			try {
+				client.sendCommand("COMPLETED");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -358,6 +363,12 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 			this.readColorsButton.setDisable(true);
 			this.solveItButton.setDisable(true);
 			this.colorReadController.startRead();
+			
+			try {
+				client.sendCommand("COMPLETED");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -378,6 +389,12 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 			this.solveItButton.setDisable(false);
 			
 			System.out.println("Time taken to solve the cube: " + formatDuration(System.currentTimeMillis() - startTime));
+			
+			try {
+				client.sendCommand("COMPLETED");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

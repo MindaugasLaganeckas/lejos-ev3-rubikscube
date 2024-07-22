@@ -18,20 +18,20 @@ public class CubeSideController {
 		put("F->B", 2);
 		put("F->D", 1);
 		
-		put("U->F", 1);
 		put("U->U", 0);
-		put("U->B", 3);
+		put("U->F", 1);
 		put("U->D", 2);
+		put("U->B", 3);
 		
-		put("B->F", 2);
-		put("B->U", 1);
 		put("B->B", 0);
+		put("B->U", 1);
+		put("B->F", 2);
 		put("B->D", 3);
 		
+		put("D->D", 0);
 		put("D->F", 3);
 		put("D->U", 2);
 		put("D->B", 1);
-		put("D->D", 0);
 	}};
 	
 	private final Move[] moveMap;
@@ -42,7 +42,7 @@ public class CubeSideController {
 	
 	public CubeSideController(final CubeSideState initState, final Move up, final Move up2, final Move down) {
 		this.state = initState;
-		this.moveMap = new Move[] {NO_MOVE, up, up2, down};
+		this.moveMap = new Move[] {NO_MOVE, down, up2, up};
 	}
 
 	public void setDesiredState(final CubeSideState desiredSide) {
@@ -54,5 +54,13 @@ public class CubeSideController {
 		} else {
 			// e.g. F->R transition not needed and not possible
 		}
+	}
+	
+	public void setState(final CubeSideState side) {
+		this.state = side;
+	}
+	
+	public CubeSideState getState() {
+		return this.state;
 	}
 }

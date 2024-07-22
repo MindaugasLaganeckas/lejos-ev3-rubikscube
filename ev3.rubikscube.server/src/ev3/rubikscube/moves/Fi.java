@@ -1,18 +1,23 @@
 package ev3.rubikscube.moves;
 
 import ev3.rubikscube.server.Move;
+import ev3.rubikscube.statecontrollers.CubeSideController;
+import ev3.rubikscube.statecontrollers.CubeSideState;
+import ev3.rubikscube.supportingmoves.OppositeForkTurn;
 
 public class Fi implements Move {
 
-	private final int direction = -1;
-	private final F f;
+	private final OppositeForkTurn opositeForkTurn;
+	private final CubeSideController controller;
 	
-	public Fi(final F f) {
-		this.f = f;
+	public Fi(final CubeSideController controller, final OppositeForkTurn opositeForkTurn) {
+		this.opositeForkTurn = opositeForkTurn;
+		this.controller = controller;
 	}
 
 	@Override
 	public void action() {
-		f.rotate(direction);
+		controller.setDesiredState(CubeSideState.F);
+		opositeForkTurn.action();
 	}
 }

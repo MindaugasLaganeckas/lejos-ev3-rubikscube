@@ -10,6 +10,13 @@ import java.util.Map;
 import ev3.rubikscube.moves.*;
 import ev3.rubikscube.statecontrollers.ForkState;
 import ev3.rubikscube.statecontrollers.ForkStateController;
+import ev3.rubikscube.supportingmoves.Completed;
+import ev3.rubikscube.supportingmoves.DoubleForkTurn;
+import ev3.rubikscube.supportingmoves.Down;
+import ev3.rubikscube.supportingmoves.ForkTurn;
+import ev3.rubikscube.supportingmoves.OppositeForkTurn;
+import ev3.rubikscube.supportingmoves.Up;
+import ev3.rubikscube.supportingmoves.Up2;
 import ev3.rubikscube.statecontrollers.CubeSideController;
 import ev3.rubikscube.statecontrollers.CubeSideState;
 import lejos.hardware.BrickFinder;
@@ -52,6 +59,8 @@ public class Server {
 		
 		put(19, "UP");
 		put(20, "DOWN");
+		
+		put(21, "COMPLETED");
 	}};
 	
 	private static Map<String, Move> moveMap = new HashMap<>();
@@ -110,12 +119,18 @@ public class Server {
 					while (code != FINISH_100) {
 						code = din.read();
 						if (code != FINISH_100) {
-							moveMap.get(communicationCodes.get(code)).action();							
+							moveMap.get(communicationCodes.get(code)).action();
+							
+							if (cubeStateController != null) {
+								g.clear();
+						        g.refresh();
+						        g.drawString("State: " + cubeStateController.getState(), SW/2, SH/2, GraphicsLCD.BASELINE|GraphicsLCD.HCENTER);
+							}
 						}
 						dout.write(0);
 						dout.flush();
 					}
-					forkStateController.setStateToOff();
+					moveMap.get("COMPLETED").action();
 				} catch (Exception e) {
 					// client disconnected without sending proper termination signals
 				}
@@ -135,35 +150,36 @@ public class Server {
 		final Up up = new Up(forkStateController);
 		final Up2 up2 = new Up2(forkStateController);
 		final Down down = new Down(forkStateController);
+		final ForkTurn forkTurn = new ForkTurn(forkStateController);
+		final OppositeForkTurn oppositeForkTurn = new OppositeForkTurn(forkStateController);
+		final DoubleForkTurn doubleForkTurn = new DoubleForkTurn(forkStateController);
 		cubeStateController = new CubeSideController(CubeSideState.F, up, up2, down);
-		
-		final F f = new F(cubeStateController, forkStateController);
-		final Fi fi = new Fi(f);
-		final F2 f2 = new F2(f);
 
-		moveMap.put("B", new B(cubeStateController, f));
-		moveMap.put("B2", new B2(cubeStateController, f2));
-		moveMap.put("B'", new Bi(cubeStateController, fi));
+		moveMap.put("B",  new B(cubeStateController, forkTurn));
+		moveMap.put("B2", new B2(cubeStateController, doubleForkTurn));
+		moveMap.put("B'", new Bi(cubeStateController, oppositeForkTurn));
 
-		moveMap.put("D", new D(cubeStateController, f));
-		moveMap.put("D2", new D2(cubeStateController, f2));
-		moveMap.put("D'", new Di(cubeStateController, fi));
+		moveMap.put("D",  new D(cubeStateController, forkTurn));
+		moveMap.put("D2", new D2(cubeStateController, doubleForkTurn));
+		moveMap.put("D'", new Di(cubeStateController, oppositeForkTurn));
 
-		moveMap.put("F", f);
-		moveMap.put("F2", f2);
-		moveMap.put("F'", fi);
+		moveMap.put("F",  new F(cubeStateController, forkTurn));
+		moveMap.put("F2", new F2(cubeStateController, doubleForkTurn));
+		moveMap.put("F'", new Fi(cubeStateController, oppositeForkTurn));
 
-		moveMap.put("L", new L(forkStateController));
+		moveMap.put("L",  new L(forkStateController));
 		moveMap.put("L2", new L2(forkStateController));
 		moveMap.put("L'", new Li(forkStateController));
 
-		moveMap.put("R", new R(forkStateController));
+		moveMap.put("R",  new R(forkStateController));
 		moveMap.put("R2", new R2(forkStateController));
 		moveMap.put("R'", new Ri(forkStateController));
 
-		moveMap.put("U", new U(cubeStateController, f));
-		moveMap.put("U2", new U2(cubeStateController, f2));
-		moveMap.put("U'", new Ui(cubeStateController, fi));
+		moveMap.put("U",  new U(cubeStateController, forkTurn));
+		moveMap.put("U2", new U2(cubeStateController, doubleForkTurn));
+		moveMap.put("U'", new Ui(cubeStateController, oppositeForkTurn));
+		
+		moveMap.put("COMPLETED", new Completed(cubeStateController, forkStateController));
 		
 		moveMap.put("UP", up);
 		moveMap.put("DOWN", down);
