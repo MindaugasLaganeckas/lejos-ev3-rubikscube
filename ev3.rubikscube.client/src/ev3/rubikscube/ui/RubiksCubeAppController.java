@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -186,15 +187,27 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 			colorLookup[j] = CubeColors.RED.ordinal();
 		}
 	}
-	
+	private final ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
 	@FXML public void turnToMakeButton() throws IOException {
 		if (client != null) {
-			client.sendCommand(turnToMake.getText());
-			try {
-				client.sendCommand("COMPLETED");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			newSingleThreadExecutor.execute(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						for (final String command : turnToMake.getText().split("\\s+")) {
+							client.sendCommand(command);	
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+					} finally {
+						try {
+							client.sendCommand("COMPLETED");
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			});
 		}
 	}
 	
@@ -250,7 +263,10 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		for (final RubiksCubeColors color : RubiksCubeColors.values()) {
 			System.out.println(color + " " + faceletCheck[color.ordinal()]);
 		}
+		
+		final long start = System.currentTimeMillis();
 		solutionStr = solverClient.solve(scrambledCube.toString());
+		System.out.println("Time taken to find a solution: " + formatDuration(System.currentTimeMillis() - start));
 		
 		Platform.runLater(new Runnable() {
 		    @Override

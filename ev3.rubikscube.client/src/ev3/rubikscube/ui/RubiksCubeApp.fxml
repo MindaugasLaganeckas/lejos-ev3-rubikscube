@@ -71,7 +71,7 @@
                                  <VBox.margin>
                                     <Insets top="10.0" />
                                  </VBox.margin></Button>
-                              <Label fx:id="solution" text="Solution">
+                              <Label fx:id="solution" text="Solution" wrapText="true">
                                  <VBox.margin>
                                     <Insets top="10.0" />
                                  </VBox.margin>
@@ -112,7 +112,7 @@
                                  <VBox.margin>
                                     <Insets top="20.0" />
                                  </VBox.margin></Label>
-                        <TextField fx:id="turnToMake" text="F">
+                        <TextField fx:id="turnToMake" text="F U' F2 D' B U R' F' L D' R' U' L U B' D2 R' F U2 D2">
                                  <VBox.margin>
                                     <Insets top="10.0" />
                                  </VBox.margin></TextField>
