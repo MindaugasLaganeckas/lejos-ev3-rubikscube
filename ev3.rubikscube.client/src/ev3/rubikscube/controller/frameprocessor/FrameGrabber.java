@@ -14,6 +14,7 @@ public class FrameGrabber implements Runnable, Closeable {
 	
 	private final VideoCapture capture;
 	private final IFrameObserver[] observers;
+	private double FOCUS_VALUE = 240;
 	
 	public FrameGrabber(final IFrameObserver[] observers, final int videoDeviceIndex) {
 		
@@ -29,6 +30,8 @@ public class FrameGrabber implements Runnable, Closeable {
 		this.capture.set(Videoio.CAP_PROP_CONTRAST, 0.5);
 		this.capture.set(Videoio.CAP_PROP_EXPOSURE, -1); // Auto exposure
 		this.capture.set(Videoio.CAP_PROP_AUTOFOCUS, 1);
+		this.capture.set(Videoio.CAP_PROP_AUTOFOCUS, 0);
+		this.capture.set(Videoio.CAP_PROP_FOCUS, FOCUS_VALUE);
 		
         // Get the highest resolution supported by the camera
         Size frameSize = new Size(
@@ -50,6 +53,10 @@ public class FrameGrabber implements Runnable, Closeable {
 
         System.out.println("Set resolution: " + frameSize.width + "x" + frameSize.height);
 
+	}
+	
+	public void updateCameraFocusValue(final int newFocus) {
+		this.capture.set(Videoio.CAP_PROP_FOCUS, newFocus);
 	}
 	
 	@Override
