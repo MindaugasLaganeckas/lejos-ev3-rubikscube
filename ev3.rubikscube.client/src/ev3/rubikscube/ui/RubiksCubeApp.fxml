@@ -178,6 +178,19 @@
                      <children>
                         <VBox prefHeight="387.0" prefWidth="408.0">
                            <children>
+                              <Label text="Saturation" />
+                               <Slider fx:id="saturation" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#saturationChanged" onMouseReleased="#saturationChanged" showTickLabels="true" value="100">
+                                  <VBox.margin>
+                                     <Insets top="10.0" />
+                                  </VBox.margin>
+                               </Slider>
+                               <Label text="Value" />
+                               <Slider fx:id="value" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#valueChanged" onMouseReleased="#valueChanged" showTickLabels="true" value="100">
+                                  <VBox.margin>
+                                     <Insets top="10.0" />
+                                  </VBox.margin>
+                               </Slider>
+                           
                               <Label text="Red" />
 		                              <CheckBox fx:id="showRedFilter" text="Show red filter" onMouseClicked="#updateFilters" selected="true">
 										<opaqueInsets>
@@ -188,12 +201,12 @@
 										</VBox.margin>
 		                              </CheckBox> 
                               		<!-- https://stackoverflow.com/questions/51229126/how-to-find-the-red-color-regions-using-opencv -->
-                                    <Slider fx:id="redLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="0">
+                                    <Slider fx:id="redLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChangedRed" onMouseReleased="#rangesChangedRed" showTickLabels="true" value="0">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
                                     </Slider>
-                                    <Slider fx:id="redHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="4">
+                                    <Slider fx:id="redHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChangedRed" onMouseReleased="#rangesChangedRed" showTickLabels="true" value="8">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
@@ -212,12 +225,12 @@
 										   <Insets top="10.0" />
 										</VBox.margin>
 		                              </CheckBox>                                     
-                                    <Slider fx:id="orangeLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="5">
+                                    <Slider fx:id="orangeLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChangedOrange" onMouseReleased="#rangesChangedOrange" showTickLabels="true" value="9">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
                                     </Slider>
-                                    <Slider fx:id="orangeHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="20">
+                                    <Slider fx:id="orangeHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChangedOrange" onMouseReleased="#rangesChangedOrange" showTickLabels="true" value="20">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
@@ -236,12 +249,12 @@
 										   <Insets top="10.0" />
 										</VBox.margin>
 		                              </CheckBox>                                     
-                                    <Slider fx:id="yellowLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="20">
+                                    <Slider fx:id="yellowLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChangedYellow" onMouseReleased="#rangesChangedYellow" showTickLabels="true" value="20">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
                                     </Slider>
-                                    <Slider fx:id="yellowHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="40">
+                                    <Slider fx:id="yellowHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChangedYellow" onMouseReleased="#rangesChangedYellow" showTickLabels="true" value="40">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
@@ -260,12 +273,12 @@
 										   <Insets top="10.0" />
 										</VBox.margin>
 		                              </CheckBox>                                     
-                                    <Slider fx:id="greenLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="40">
+                                    <Slider fx:id="greenLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChangedGreen" onMouseReleased="#rangesChangedGreen" showTickLabels="true" value="40">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
                                     </Slider>
-                                    <Slider fx:id="greenHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="80">
+                                    <Slider fx:id="greenHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChangedGreen" onMouseReleased="#rangesChangedGreen" showTickLabels="true" value="80">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
@@ -284,12 +297,12 @@
 										   <Insets top="10.0" />
 										</VBox.margin>
 		                              </CheckBox> 
-                                    <Slider fx:id="blueLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="80">
+                                    <Slider fx:id="blueLow" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChangedBlue" onMouseReleased="#rangesChangedBlue" showTickLabels="true" value="80">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>
                                     </Slider>
-                                    <Slider fx:id="blueHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChanged" onMouseReleased="#rangesChanged" showTickLabels="true" value="110">
+                                    <Slider fx:id="blueHigh" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#rangesChangedBlue" onMouseReleased="#rangesChangedBlue" showTickLabels="true" value="110">
                                        <VBox.margin>
                                           <Insets top="10.0" />
                                        </VBox.margin>

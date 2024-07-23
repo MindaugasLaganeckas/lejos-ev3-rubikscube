@@ -9,11 +9,13 @@ import ev3.rubikscube.controller.readcubecolors.CubeColorsReader;
 
 public class SquareFrameDecorator implements FrameDecorator {
 
+	private static final int THICKNESS = 10;
+	
 	@Override
 	public Mat decorate(final Mat input) {
 		final Mat clone = input.clone();
 		CubeColorsReader.calcAreasOfInterest(input.width(), input.height()).forEach(rect -> {
-			Imgproc.rectangle(clone, rect, new Scalar(255, 0, 0));
+			Imgproc.rectangle(clone, rect, new Scalar(255, 0, 0), THICKNESS);
 		});
 		return clone;
 	}

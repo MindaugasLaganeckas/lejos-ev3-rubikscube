@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import ev3.rubikscube.controller.MindstormRubiksCubeClient;
@@ -38,7 +39,7 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 
 	private static final int VIDEO_DEVICE_INDEX = 0;
 	public static final int RED_COLLOR_LOWER_RANGE2 = 120;
-	public static final int RED_COLLOR_UPPER_RANGE2 = 240;
+	public static final int RED_COLLOR_UPPER_RANGE2 = 180;
 	
     private int rows = 9;
     private int columns = 12;
@@ -102,9 +103,9 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	private Slider blueLow;
 	
 	@FXML
-	private Slider colorDepthLow;
+	private Slider saturation;
 	@FXML
-	private Slider colorDepthHigh;
+	private Slider value;
 	
 	@FXML
 	private Button connectButton;
@@ -152,6 +153,9 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	private final AtomicIntegerArray upperRanges = new AtomicIntegerArray(5);
 	private final AtomicBoolean[] showFilters = new AtomicBoolean[5];
 	
+	private final AtomicInteger saturationValue = new AtomicInteger();
+	private final AtomicInteger valueValue = new AtomicInteger();
+	
 	private boolean solveItModeEnabled = false;
 	
 	public void initRanges() {
@@ -166,6 +170,9 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		upperRanges.set(CubeColors.YELLOW.ordinal(), (int)yellowHigh.getValue());
 		upperRanges.set(CubeColors.GREEN.ordinal(), (int)greenHigh.getValue());
 		upperRanges.set(CubeColors.BLUE.ordinal(), (int)blueHigh.getValue());
+		
+		saturationValue.set((int) saturation.getValue());
+		valueValue.set((int) value.getValue());
 		
 		// white by default
 		Arrays.fill(colorLookup, RubiksCubeColors.WHITE.ordinal());
@@ -203,11 +210,6 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		showFilters[CubeColors.YELLOW.ordinal()] = new AtomicBoolean(showYellowFilter.isSelected());
 		showFilters[CubeColors.GREEN.ordinal()] = new AtomicBoolean(showGreenFilter.isSelected());
 		showFilters[CubeColors.BLUE.ordinal()] = new AtomicBoolean(showBlueFilter.isSelected());
-	}
-	
-	@FXML
-	protected void rangesChanged() {
-		initRanges();
 	}
 	
 	@FXML
@@ -288,14 +290,14 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		// preserve image ratio
 		colorFrame.setPreserveRatio(true);
 				
-		this.colorsReader = new CubeColorsReader(colorLookup);
+		this.colorsReader = new CubeColorsReader(colorLookup, saturationValue, valueValue);
 		this.colorsReader.subscribe(colorFrameDecorator);
 		
 		// grab a frame every 33 ms (30 frames/sec)
 		this.frameGrabber = new FrameGrabber( 
 				new IFrameObserver[] {
 						new FrameObserver(originalFrame, new SquareFrameDecorator()),
-						new FrameObserver(processedFrame, new ProcessedFrameDecorator(lowerRanges, upperRanges, showFilters)),
+						new FrameObserver(processedFrame, new ProcessedFrameDecorator(lowerRanges, upperRanges, showFilters, saturationValue, valueValue)),
 						new FrameObserver(colorFrame, colorFrameDecorator),
 						this.colorsReader,
 			}, VIDEO_DEVICE_INDEX
@@ -357,6 +359,7 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	@FXML
 	protected void readColors() {
 		if (this.client != null) {
+			this.startTime = System.currentTimeMillis();
 			this.colorReadController = new ColorReadControllerForAllSides(this.client, me, this.colorsReader, kubeColors, 
 					new IColorReadStartedObserver[] {colorFrameDecorator});
 			this.colorsReader.subscribe(colorReadController);
@@ -441,5 +444,37 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		solveItModeEnabled = true;
 		this.startTime = System.currentTimeMillis();
 		readColors();
+	}
+
+	@FXML public void rangesChangedRed() {
+		orangeLow.setValue(redHigh.getValue());
+		initRanges();
+	}
+
+	@FXML public void rangesChangedOrange() {
+		yellowLow.setValue(orangeHigh.getValue());
+		initRanges();
+	}
+
+	@FXML public void rangesChangedYellow() {
+		greenLow.setValue(yellowHigh.getValue());
+		initRanges();
+	}
+
+	@FXML public void rangesChangedGreen() {
+		blueLow.setValue(greenHigh.getValue());
+		initRanges();
+	}
+
+	@FXML public void rangesChangedBlue() {
+		initRanges();
+	}
+
+	@FXML public void saturationChanged() {
+		initRanges();
+	}
+
+	@FXML public void valueChanged() {
+		initRanges();
 	}
 }

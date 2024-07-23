@@ -8,6 +8,7 @@ import static ev3.rubikscube.ui.RubiksCubeAppController.RED_COLLOR_UPPER_RANGE2;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import org.opencv.core.Core;
@@ -23,12 +24,16 @@ public class ProcessedFrameDecorator implements FrameDecorator {
 	private final AtomicIntegerArray lowerRanges;
 	private final AtomicIntegerArray upperRanges;
 	private final AtomicBoolean[] showFilters;
+	private final AtomicInteger saturationValue;
+	private final AtomicInteger valueValue;
 	
 	public ProcessedFrameDecorator(final AtomicIntegerArray lowerRanges, final AtomicIntegerArray upperRanges, 
-			final AtomicBoolean[] showFilters) {
+			final AtomicBoolean[] showFilters, final AtomicInteger saturationValue, final AtomicInteger valueValue) {
 		this.lowerRanges = lowerRanges;
 		this.upperRanges = upperRanges;
 		this.showFilters = showFilters;
+		this.valueValue = valueValue;
+		this.saturationValue = saturationValue;
 	}
 	
 	@Override
@@ -57,9 +62,9 @@ public class ProcessedFrameDecorator implements FrameDecorator {
 		{
 			final int redColorIndex = CubeColors.RED.ordinal();
 	        // Define the range of red color in HSV
-			final Scalar lowerRed1 = new Scalar(lowerRanges.get(redColorIndex), 50, 50);
+			final Scalar lowerRed1 = new Scalar(lowerRanges.get(redColorIndex), saturationValue.get(), valueValue.get());
 			final Scalar upperRed1 = new Scalar(upperRanges.get(redColorIndex), 255, 255);
-			final Scalar lowerRed2 = new Scalar(RED_COLLOR_LOWER_RANGE2, 50, 50);
+			final Scalar lowerRed2 = new Scalar(RED_COLLOR_LOWER_RANGE2, saturationValue.get(), valueValue.get());
 			final Scalar upperRed2 = new Scalar(RED_COLLOR_UPPER_RANGE2, 255, 255);
 			
 	        // Threshold the HSV image to get only red colors
@@ -82,7 +87,7 @@ public class ProcessedFrameDecorator implements FrameDecorator {
 		}
 		// RED is the first color in color and we have already checked for it
 		for (int i = 1; i < CubeColors.values().length; i++) {
-			final Scalar lowerRange = new Scalar(lowerRanges.get(i), 50, 50);
+			final Scalar lowerRange = new Scalar(lowerRanges.get(i), saturationValue.get(), valueValue.get());
 			final Scalar upperRange = new Scalar(upperRanges.get(i), 255, 255);
 			
 			final Mat mask = new Mat();

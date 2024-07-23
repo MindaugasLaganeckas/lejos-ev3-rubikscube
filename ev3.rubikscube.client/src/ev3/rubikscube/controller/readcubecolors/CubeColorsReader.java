@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -25,9 +26,8 @@ import ev3.rubikscube.ui.RubiksCubeColors;
 
 public class CubeColorsReader implements IFrameObserver {
 	
-	private static final int EDGE_LENGTH = 130;
 	public static final int NUMBER_OF_FACETS = 9;
-	private static final int TIMES_TO_READ_BEFORE_NOTIFY = 5; // read every facet x times
+	private static final int TIMES_TO_READ_BEFORE_NOTIFY = 3; // read every facet x times
 	
 	private final int[] colorLookup;
 	private final Set<IColorReadCompletedObserver> observers = new LinkedHashSet<IColorReadCompletedObserver>();
@@ -46,8 +46,13 @@ public class CubeColorsReader implements IFrameObserver {
 		this.percentages = new Double[NUMBER_OF_FACETS];
 	}
 	
-	public CubeColorsReader(final int[] colorLookup) {
+	private final AtomicInteger saturationValue;
+	private final AtomicInteger valueValue;
+	
+	public CubeColorsReader(final int[] colorLookup, final AtomicInteger saturationValue, final AtomicInteger valueValue) {
 		this.colorLookup = colorLookup;
+		this.valueValue = valueValue;
+		this.saturationValue = saturationValue;
 	}
 	
 	@Override
@@ -60,6 +65,7 @@ public class CubeColorsReader implements IFrameObserver {
 			final Mat illuminationCompensation = illuminationCompensation(input);
 			final Mat histogramEqualizationProcessedHsvImage = histogramEqualization(illuminationCompensation);
 			final List<Rect> areasForColorTest = calcAreasOfInterest(input.width(), input.height());
+			boolean changePrinted = false;
 			for (int faceIndex = 0; faceIndex < areasForColorTest.size(); faceIndex++) {
 				final Rect rect = areasForColorTest.get(faceIndex);
 				final Mat croppedImage = new Mat(histogramEqualizationProcessedHsvImage, rect);
@@ -68,7 +74,7 @@ public class CubeColorsReader implements IFrameObserver {
 		        
 		        // Create a mask for pixels with Saturation and Value between 50 and 255
 		        final Mat mask = new Mat();
-		        Core.inRange(croppedImage, new Scalar(0, 50, 50), new Scalar(RED_COLLOR_UPPER_RANGE2, 255, 255), mask);
+		        Core.inRange(croppedImage, new Scalar(0, saturationValue.get(), valueValue.get()), new Scalar(RED_COLLOR_UPPER_RANGE2, 255, 255), mask);
 		        
 		        // Compute histograms for each channel (Hue, Saturation, Value)
 		        final MatOfInt histSize = new MatOfInt(256);
@@ -84,10 +90,15 @@ public class CubeColorsReader implements IFrameObserver {
 		        
 		        final Pair pair = getDominantColor(histHueArray, colorLookup, croppedImage.rows() * croppedImage.cols());
 		        if (percentages[faceIndex] == null || Double.compare(pair.percentage, percentages[faceIndex]) > 0) {
-		        	this.colors[faceIndex] = pair.color;	
+		        	this.colors[faceIndex] = pair.color;
+		        	this.percentages[faceIndex] = pair.percentage;
+		        	System.out.print(pair.color + ": " + String.format("%.1f", pair.percentage * 100) + "%   ");
+		        	changePrinted = true;
 		        }
 			}
-			System.out.println();
+			if (changePrinted) {
+				System.out.println("\n");	
+			}
 		} else {
 			for (final IColorReadCompletedObserver observer : observers) {
 				observer.colorReadCompleted(this.colors);
@@ -112,38 +123,37 @@ public class CubeColorsReader implements IFrameObserver {
 				mostFrequentColor = RubiksCubeColors.values()[colorIndex];
 			}
 		}
-		
 		final double mostFrequentColorCountPercentage = mostFrequentColorCount * 1.0 / totalPixels;
-		System.out.print(mostFrequentColor + ": " + (mostFrequentColorCountPercentage * 100) + "%   ");
-		
-		if (Double.compare(mostFrequentColorCountPercentage, 0.3) > 0) {
+		if (Double.compare(mostFrequentColorCountPercentage, 0.2) > 0) {
 			return new Pair(mostFrequentColor, mostFrequentColorCountPercentage);
 		}
-		return new Pair(RubiksCubeColors.WHITE, 100d);
+		return new Pair(RubiksCubeColors.WHITE, 0d);
 	}
 	
 	public static List<Rect> calcAreasOfInterest(final int frameWidth, final int frameHeight) {
 		final List<Rect> pointsOfInterest = new LinkedList<>();
-		final int x = frameWidth / 2;
-		final int y = frameHeight / 2;
 		
-		pointsOfInterest.add(generatePoints(x - EDGE_LENGTH, y - EDGE_LENGTH));
-		pointsOfInterest.add(generatePoints(x, y - EDGE_LENGTH));
-		pointsOfInterest.add(generatePoints(x + EDGE_LENGTH, y - EDGE_LENGTH));
+		final int edgeLength = (int)(frameHeight * 0.3);
+		final int x = frameWidth / 2 - edgeLength / 2;
+		final int y = frameHeight / 2 - edgeLength / 2;
+		final int actualEdgeLength = (int)(edgeLength * 0.8);
 		
-		pointsOfInterest.add(generatePoints(x - EDGE_LENGTH, y));
-		pointsOfInterest.add(generatePoints(x, y));
-		pointsOfInterest.add(generatePoints(x + EDGE_LENGTH, y));
+		pointsOfInterest.add(generatePoints(x - edgeLength, y - edgeLength, actualEdgeLength));
+		pointsOfInterest.add(generatePoints(x, y - edgeLength, actualEdgeLength));
+		pointsOfInterest.add(generatePoints(x + edgeLength, y - edgeLength, actualEdgeLength));
 		
-		pointsOfInterest.add(generatePoints(x - EDGE_LENGTH, y + EDGE_LENGTH));
-		pointsOfInterest.add(generatePoints(x, y + EDGE_LENGTH));
-		pointsOfInterest.add(generatePoints(x + EDGE_LENGTH, y + EDGE_LENGTH));
+		pointsOfInterest.add(generatePoints(x - edgeLength, y, actualEdgeLength));
+		pointsOfInterest.add(generatePoints(x, y, actualEdgeLength));
+		pointsOfInterest.add(generatePoints(x + edgeLength, y, actualEdgeLength));
+		
+		pointsOfInterest.add(generatePoints(x - edgeLength, y + edgeLength, actualEdgeLength));
+		pointsOfInterest.add(generatePoints(x, y + edgeLength, actualEdgeLength));
+		pointsOfInterest.add(generatePoints(x + edgeLength, y + edgeLength, actualEdgeLength));
 		
 		return pointsOfInterest;
 	}
 	
-	private static Rect generatePoints(final int x, final int y) {
-		final int edgeLength = 50;
+	private static Rect generatePoints(final int x, final int y, final int edgeLength) {
 		return new Rect(x, y, edgeLength, edgeLength);
 	}
 
