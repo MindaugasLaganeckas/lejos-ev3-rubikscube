@@ -107,6 +107,8 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	private Slider saturation;
 	@FXML
 	private Slider value;
+	@FXML
+	private Slider cameraFocus;
 	
 	@FXML
 	private Button connectButton;
@@ -145,7 +147,7 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	// a timer for acquiring the video stream
 	private ScheduledExecutorService timer;
 	
-	private Runnable frameGrabber;
+	private FrameGrabber frameGrabber;
 	
 	private CubeColorsReader colorsReader = null;
 	
@@ -468,21 +470,25 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	}
 
 	@FXML public void rangesChangedOrange() {
+		redHigh.setValue(orangeLow.getValue());
 		yellowLow.setValue(orangeHigh.getValue());
 		initRanges();
 	}
 
 	@FXML public void rangesChangedYellow() {
+		orangeHigh.setValue(yellowLow.getValue());
 		greenLow.setValue(yellowHigh.getValue());
 		initRanges();
 	}
 
 	@FXML public void rangesChangedGreen() {
+		yellowHigh.setValue(greenLow.getValue());
 		blueLow.setValue(greenHigh.getValue());
 		initRanges();
 	}
 
 	@FXML public void rangesChangedBlue() {
+		greenHigh.setValue(blueLow.getValue());
 		initRanges();
 	}
 
@@ -492,5 +498,9 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 
 	@FXML public void valueChanged() {
 		initRanges();
+	}
+
+	@FXML public void focusChanged() {
+		this.frameGrabber.updateCameraFocusValue((int) cameraFocus.getValue());
 	}
 }
