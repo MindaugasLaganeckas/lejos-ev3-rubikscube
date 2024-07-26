@@ -15,11 +15,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
+import org.opencv.core.Mat;
+
 import ev3.rubikscube.controller.MindstormRubiksCubeClient;
 import ev3.rubikscube.controller.RubiksCuberSolverClient;
 import ev3.rubikscube.controller.frameprocessor.CubeColors;
-import ev3.rubikscube.controller.frameprocessor.FrameGrabber;
-import ev3.rubikscube.controller.frameprocessor.FrameObserver;
 import ev3.rubikscube.controller.frameprocessor.decorator.ColorFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.ProcessedFrameDecorator;
 import ev3.rubikscube.controller.frameprocessor.decorator.SquareFrameDecorator;
@@ -35,12 +35,17 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.TilePane;
+import messages.MessageBroker;
+import messages.Subscriber;
+import messages.cameraframes.FrameGrabber;
+import messages.cameraframes.FrameObserver;
 
 public class RubiksCubeAppController implements Closeable, PropertyChangeListener {
 
 	private static final int VIDEO_DEVICE_INDEX = 0;
 	public static final int RED_COLLOR_LOWER_RANGE2 = 120;
 	public static final int RED_COLLOR_UPPER_RANGE2 = 180;
+	private static final int NUMBER_OF_SUBSCRIBERS = 10;
 	
     private int rows = 9;
     private int columns = 12;
@@ -146,6 +151,7 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	
 	// a timer for acquiring the video stream
 	private ScheduledExecutorService timer;
+	private final ExecutorService subscriberExecutorService = Executors.newFixedThreadPool(NUMBER_OF_SUBSCRIBERS);
 	
 	private FrameGrabber frameGrabber;
 	
@@ -311,18 +317,32 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		this.colorsReader = new CubeColorsReader(colorLookup, saturationValue, valueValue);
 		this.colorsReader.subscribe(colorFrameDecorator);
 		
+		final MessageBroker<Mat> videoMessageBroker = new MessageBroker<>();
+		
 		// grab a frame every 33 ms (30 frames/sec)
-		this.frameGrabber = new FrameGrabber( 
-				new IFrameObserver[] {
-						new FrameObserver(originalFrame, new SquareFrameDecorator()),
-						new FrameObserver(processedFrame, new ProcessedFrameDecorator(lowerRanges, upperRanges, showFilters, saturationValue, valueValue)),
-						new FrameObserver(colorFrame, colorFrameDecorator),
-						this.colorsReader,
-			}, VIDEO_DEVICE_INDEX
-		);
+		this.frameGrabber = new FrameGrabber(videoMessageBroker, VIDEO_DEVICE_INDEX);
+		
+		final Subscriber[] subscribers = new Subscriber[] {
+				new FrameObserver(originalFrame, new SquareFrameDecorator()),
+				new FrameObserver(processedFrame, new ProcessedFrameDecorator(lowerRanges, upperRanges, showFilters, saturationValue, valueValue)),
+				new FrameObserver(colorFrame, colorFrameDecorator),
+				this.colorsReader
+				};
+		if (subscribers.length >= NUMBER_OF_SUBSCRIBERS) {
+			throw new IllegalStateException();
+		}
+		
+		// subscribe
+		for (final Subscriber<Mat> subscriber : subscribers) {
+			videoMessageBroker.subscribe(subscriber);
+		}
+		// submit
+		for (final Subscriber<Mat> subscriber : subscribers) {
+			this.subscriberExecutorService.submit(subscriber);
+		}
 
 		this.timer = Executors.newSingleThreadScheduledExecutor();
-		this.timer.scheduleAtFixedRate(frameGrabber, 0, 33, TimeUnit.MILLISECONDS);
+		this.timer.scheduleAtFixedRate(frameGrabber, 0, 60, TimeUnit.MILLISECONDS);
 
 		// update the button content
 		this.cameraButton.setDisable(true);
@@ -337,10 +357,15 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 			try {
 				// stop the timer
 				this.timer.shutdown();
-				this.timer.awaitTermination(33, TimeUnit.MILLISECONDS);
+				this.timer.awaitTermination(1, TimeUnit.SECONDS);
 				((Closeable)this.frameGrabber).close();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
+			}
+		}
+		for (final Runnable runnable : subscriberExecutorService.shutdownNow()) {
+			if (runnable instanceof Closeable) {
+				((Closeable)runnable).close();
 			}
 		}
 	}

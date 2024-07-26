@@ -21,10 +21,11 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import ev3.rubikscube.ui.IColorReadCompletedObserver;
-import ev3.rubikscube.ui.IFrameObserver;
 import ev3.rubikscube.ui.RubiksCubeColors;
+import messages.IMessage;
+import messages.Subscriber;
 
-public class CubeColorsReader implements IFrameObserver {
+public class CubeColorsReader extends Subscriber<Mat> {
 	
 	public static final int NUMBER_OF_FACETS = 9;
 	private static final int TIMES_TO_READ_BEFORE_NOTIFY = 3; // read every facet x times
@@ -56,16 +57,16 @@ public class CubeColorsReader implements IFrameObserver {
 	}
 	
 	@Override
-	public void update(final Mat input) {
+	public void process(final IMessage<Mat> message) {
 		if (!colorReadStarted || colorReadFinished) return;
 		
 		if (currentRead < TIMES_TO_READ_BEFORE_NOTIFY) {
 			currentRead++;
 			
+			final Mat input = message.getContent();
 			final Mat illuminationCompensation = illuminationCompensation(input);
 			final Mat histogramEqualizationProcessedHsvImage = histogramEqualization(illuminationCompensation);
 			final List<Rect> areasForColorTest = calcAreasOfInterest(input.width(), input.height());
-			boolean changePrinted = false;
 			for (int faceIndex = 0; faceIndex < areasForColorTest.size(); faceIndex++) {
 				final Rect rect = areasForColorTest.get(faceIndex);
 				final Mat croppedImage = new Mat(histogramEqualizationProcessedHsvImage, rect);
@@ -92,12 +93,7 @@ public class CubeColorsReader implements IFrameObserver {
 		        if (percentages[faceIndex] == null || Double.compare(pair.percentage, percentages[faceIndex]) > 0) {
 		        	this.colors[faceIndex] = pair.color;
 		        	this.percentages[faceIndex] = pair.percentage;
-		        	System.out.print(pair.color + ": " + String.format("%.1f", pair.percentage * 100) + "%   ");
-		        	changePrinted = true;
 		        }
-			}
-			if (changePrinted) {
-				System.out.println("\n");	
 			}
 		} else {
 			for (final IColorReadCompletedObserver observer : observers) {

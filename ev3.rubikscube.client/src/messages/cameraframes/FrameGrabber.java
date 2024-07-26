@@ -1,4 +1,4 @@
-package ev3.rubikscube.controller.frameprocessor;
+package messages.cameraframes;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -8,18 +8,21 @@ import org.opencv.core.Size;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.Videoio;
 
-import ev3.rubikscube.ui.IFrameObserver;
+import messages.IMessage;
+import messages.MessageBroker;
+import messages.Publisher;
 
-public class FrameGrabber implements Runnable, Closeable {
+public class FrameGrabber extends Publisher<Mat> implements Closeable {
 	
 	private final VideoCapture capture;
-	private final IFrameObserver[] observers;
-	private double FOCUS_VALUE = 240;
+	private double FOCUS_VALUE = 254;
+	private final int videoDeviceIndex;
 	
-	public FrameGrabber(final IFrameObserver[] observers, final int videoDeviceIndex) {
+	public FrameGrabber(final MessageBroker<Mat> broker, final int videoDeviceIndex) {
 		
-		this.observers = observers;
+		super(broker);
 		
+		this.videoDeviceIndex = videoDeviceIndex;
 		this.capture = new VideoCapture(videoDeviceIndex);
 		// start the video capture
 		this.capture.open(videoDeviceIndex);
@@ -58,24 +61,6 @@ public class FrameGrabber implements Runnable, Closeable {
 	public void updateCameraFocusValue(final int newFocus) {
 		this.capture.set(Videoio.CAP_PROP_FOCUS, newFocus);
 	}
-	
-	@Override
-	public void run() {
-		final Mat frame = grabFrame();
-		for (final IFrameObserver frameObserver : observers) {
-			try {
-				frameObserver.update(frame);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	private Mat grabFrame() {
-		final Mat originalFrame = new Mat();
-		this.capture.read(originalFrame);
-		return originalFrame;
-	}
 
 	@Override
 	public void close() throws IOException {
@@ -83,5 +68,12 @@ public class FrameGrabber implements Runnable, Closeable {
 			// release the camera
 			this.capture.release();
 		}
+	}
+
+	@Override
+	public IMessage<Mat> createMessage() {
+		final Mat originalFrame = new Mat();
+		this.capture.read(originalFrame);
+		return new FrameMessage(originalFrame, videoDeviceIndex);
 	}
 }

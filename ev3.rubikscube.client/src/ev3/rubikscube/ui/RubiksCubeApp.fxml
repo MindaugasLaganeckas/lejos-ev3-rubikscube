@@ -179,7 +179,7 @@
                         <VBox prefHeight="387.0" prefWidth="408.0">
                            <children>
                            <Label text="Camera focus" />
-                               <Slider fx:id="cameraFocus" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#focusChanged" onMouseReleased="#focusChanged" showTickLabels="true" value="240">
+                               <Slider fx:id="cameraFocus" BlockIncrement="1" MajorTickUnit="10" MinorTickCount="1" ShowTickMarks="true" max="255" min="0" onKeyReleased="#focusChanged" onMouseReleased="#focusChanged" showTickLabels="true" value="254">
                                   <VBox.margin>
                                      <Insets top="10.0" />
                                   </VBox.margin>

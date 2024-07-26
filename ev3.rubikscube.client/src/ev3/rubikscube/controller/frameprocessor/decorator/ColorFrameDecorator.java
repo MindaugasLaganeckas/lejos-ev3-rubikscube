@@ -30,9 +30,8 @@ public class ColorFrameDecorator implements IColorReadCompletedObserver, FrameDe
 	
 	@Override
 	public synchronized Mat decorate(final Mat input) {
+		if (currentRead == null) return input;
 		final Mat output = input.clone();
-		if (currentRead == null) return output;
-		
 		final List<Rect> calcPointsOfInterest = CubeColorsReader.calcAreasOfInterest(output.width(), output.height());
 		
 		for (int i = 0; i < calcPointsOfInterest.size(); i++) {
