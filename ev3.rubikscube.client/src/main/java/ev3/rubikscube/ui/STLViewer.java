@@ -1,8 +1,6 @@
 package ev3.rubikscube.ui;
 
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.geometry.Bounds;
 import javafx.scene.*;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.paint.Color;
@@ -10,11 +8,13 @@ import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.*;
 import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
-import processor3d.STLReader;
+import lombok.extern.log4j.Log4j2;
+import processor3d.*;
 
 import java.io.IOException;
 import java.util.List;
 
+@Log4j2
 public class STLViewer extends Application {
     private final Group root = new Group();
     private final PerspectiveCamera camera = new PerspectiveCamera(true);
@@ -22,74 +22,6 @@ public class STLViewer extends Application {
     private double mouseX, mouseY; // Variables to track mouse position
     private double rotateX, rotateY, rotateZ; // Variables to store current rotation angles
 
-    private static MeshView createCube() {
-        // Create a custom mesh for the cube
-        final TriangleMesh mesh = new TriangleMesh();
-
-        // Define the 8 vertices of the cube
-        final float halfSize = 100;
-        final float[] points = {
-                -halfSize, -halfSize, -halfSize, // 0
-                halfSize, -halfSize, -halfSize, // 1
-                halfSize, halfSize, -halfSize, // 2
-                -halfSize, halfSize, -halfSize, // 3
-                -halfSize, -halfSize, halfSize, // 4
-                halfSize, -halfSize, halfSize, // 5
-                halfSize, halfSize, halfSize, // 6
-                -halfSize, halfSize, halfSize  // 7
-        };
-        mesh.getPoints().addAll(points);
-
-        // Define the texture coordinates (dummy in this case, as we are using materials)
-        final float[] texCoords = {
-                0, 0
-        };
-        mesh.getTexCoords().addAll(texCoords);
-
-        // Define the faces of the cube (12 triangles, 6 faces)
-        final int[] faces = {
-                // Front face
-                0, 0, 1, 0, 2, 0,
-                0, 0, 2, 0, 3, 0,
-                // Back face
-                4, 0, 6, 0, 5, 0,
-                4, 0, 7, 0, 6, 0,
-                // Left face
-                0, 0, 3, 0, 7, 0,
-                0, 0, 7, 0, 4, 0,
-                // Right face
-                1, 0, 5, 0, 6, 0,
-                1, 0, 6, 0, 2, 0,
-                // Top face
-                0, 0, 4, 0, 5, 0,
-                0, 0, 5, 0, 1, 0,
-                // Bottom face
-                3, 0, 2, 0, 6, 0,
-                3, 0, 6, 0, 7, 0
-        };
-        mesh.getFaces().addAll(faces);
-
-        // Create a MeshView
-        final MeshView cube = new MeshView(mesh);
-
-        // Apply different materials for each face
-        final PhongMaterial[] materials = {
-                new PhongMaterial(Color.RED),    // Front
-                new PhongMaterial(Color.GREEN),  // Back
-                new PhongMaterial(Color.BLUE),   // Left
-                new PhongMaterial(Color.YELLOW), // Right
-                new PhongMaterial(Color.CYAN),   // Top
-                new PhongMaterial(Color.MAGENTA) // Bottom
-        };
-
-        // Assign materials based on face indices
-        cube.setMaterial(materials[0]); // Default material for now
-
-        // Rotate for better visibility
-        cube.getTransforms().add(new Rotate(45, Rotate.X_AXIS));
-        cube.getTransforms().add(new Rotate(45, Rotate.Y_AXIS));
-        return cube;
-    }
 
     public static void main(final String[] args) {
         launch(args);
@@ -114,31 +46,58 @@ public class STLViewer extends Application {
         stage.show();
     }
 
-    private MeshView createMeshView(final List<STLReader.Triangle> triangles) {
-        final TriangleMesh mesh = new TriangleMesh();
+    private Group createCubeMeshView() {
+        final STLCube stlCube = new STLCube();
+        final Group group = new Group();
 
-        // Add vertices to the mesh
-        for (final STLReader.Triangle triangle : triangles) {
-            final STLReader.Vertex[] vertices = {triangle.v1, triangle.v2, triangle.v3};
-            for (final STLReader.Vertex vertex : vertices) {
-                mesh.getPoints().addAll(vertex.x, vertex.y, vertex.z);
+        int sumX = 0;
+        int sumY = 0;
+        int sumZ = 0;
+        int counter = 0;
+        for (final STLCubeSide side : stlCube.getCubeSides()) {
+            final TriangleMesh mesh = new TriangleMesh();
+            mesh.setVertexFormat(VertexFormat.POINT_NORMAL_TEXCOORD);
+            // vertices
+            for (final STLTriangle triangle : side.getTriangles()) {
+                for (final STLVertex vertex : triangle.getVertices()) {
+                    mesh.getPoints().addAll(vertex.getX(), vertex.getY(), vertex.getZ());
+                    sumX += vertex.getX();
+                    sumY += vertex.getY();
+                    sumZ += vertex.getZ();
+                    counter++;
+                }
             }
+
+            // normals
+            final STLVertex normal = side.getNormal().getNormal();
+            mesh.getNormals().addAll(normal.getX(), normal.getY(), normal.getZ());
+            // texture
+            mesh.getTexCoords().addAll(
+                    0, 0
+            );
+            // faces
+            for (int i = 0; i < side.getTriangles().size(); i++) {
+                final int offset = i * 3;
+                mesh.getFaces().addAll(
+                        offset, 0, 0, // Point 0 / Normal 0 / TexCoord 0
+                        offset + 1, 0, 0,
+                        offset + 2, 0, 0
+                );
+            }
+
+            final MeshView meshView = new MeshView(mesh);
+            final PhongMaterial material =
+                    new PhongMaterial(
+                            Color.MEDIUMVIOLETRED);
+            meshView.setMaterial(material);
+
+            group.getChildren().add(meshView);
         }
+        group.setTranslateX(group.getTranslateX() - ((double) sumX / counter));
+        group.setTranslateY(group.getTranslateY() - ((double) sumY / counter));
+        group.setTranslateZ(group.getTranslateZ() - ((double) sumZ / counter));
 
-        // Add faces (each face is three indices into the points list)
-        for (int i = 0; i < triangles.size(); i++) {
-            final int offset = i * 3;
-            mesh.getFaces().addAll(offset, 0, offset + 1, 0, offset + 2, 0);
-        }
-
-        // Add dummy texture coordinates (required by JavaFX)
-        mesh.getTexCoords().addAll(0, 0);
-
-        final MeshView meshView = new MeshView(mesh);
-        final PhongMaterial material = new PhongMaterial(Color.CORNFLOWERBLUE);
-        meshView.setMaterial(material);
-
-        return meshView;
+        return group;
     }
 
     private void setupCamera(final Scene scene) {
@@ -239,25 +198,21 @@ public class STLViewer extends Application {
     }
 
     private void displayBinarySTL(final String filePath) {
-        final STLReader reader = new STLReader();
-        final List<STLReader.Triangle> triangles;
-
-        try {
-            triangles = reader.readSTLFile(filePath);
-        } catch (final IOException e) {
-            e.printStackTrace();
-            return;
-        }
-
         // Create the original mesh
-        final MeshView originalMesh = createMeshView(triangles);
+//        final MeshView originalMesh = createMeshView(triangles);
 
         // Add a 3x3x3 grid of the mesh to the scene
         final double spacing = 21; // Adjust spacing as needed
-        createGrid(sceneGroup, originalMesh, spacing);
+        //createGrid(sceneGroup, originalMesh, spacing);
 
         // Add the scene group to the root
-        root.getChildren().add(sceneGroup);
+        final Group cubeMeshView = createCubeMeshView();
+        sceneGroup.getChildren().add(cubeMeshView);
+        final Sphere sphere = new Sphere(10);
+        final PhongMaterial material = new PhongMaterial(Color.RED);
+        sphere.setMaterial(material);
+
+        root.getChildren().addAll(sceneGroup);
     }
 
     private void rotateMeshesByX(final Group sceneGroup, final int targetX, final double angle) {

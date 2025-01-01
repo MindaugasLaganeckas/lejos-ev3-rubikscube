@@ -6,4 +6,6 @@ module ev3.rubikscube.ui {
     requires javafx.swing;
     requires io.vertx.core;
     requires opencv;
+    requires static lombok;
+    requires org.apache.logging.log4j;
 }
