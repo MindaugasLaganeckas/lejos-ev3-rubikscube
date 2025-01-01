@@ -4,5 +4,6 @@ module ev3.rubikscube.ui {
     requires javafx.fxml;
     requires javafx.graphics;
     requires javafx.swing;
+    requires io.vertx.core;
     requires opencv;
 }

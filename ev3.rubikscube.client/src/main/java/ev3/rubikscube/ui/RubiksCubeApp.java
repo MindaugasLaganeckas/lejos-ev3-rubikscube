@@ -21,7 +21,7 @@ public class RubiksCubeApp extends Application
 		{
 			// load the FXML resource
 			final FXMLLoader loader = new FXMLLoader(getClass().getResource("RubiksCubeApp.fxml"));
-			final BorderPane root = (BorderPane) loader.load();
+			final BorderPane root = loader.load();
 			
 			// set a whitesmoke background
 			root.setStyle("-fx-background-color: whitesmoke;");
@@ -35,10 +35,8 @@ public class RubiksCubeApp extends Application
 
 			// get the controller
 			final RubiksCubeAppController controller = loader.getController();
-			controller.setRectangles();
-			controller.initRanges();
-			controller.updateFilters();
-			
+			controller.initController();
+
 			// show the GUI
 			primaryStage.show();
 			

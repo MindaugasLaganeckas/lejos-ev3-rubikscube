@@ -45,8 +45,7 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	private static final int VIDEO_DEVICE_INDEX = 0;
 	public static final int RED_COLLOR_LOWER_RANGE2 = 120;
 	public static final int RED_COLLOR_UPPER_RANGE2 = 180;
-	private static final int NUMBER_OF_SUBSCRIBERS = 10;
-	
+
     private int rows = 9;
     private int columns = 12;
     
@@ -73,14 +72,20 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
     private final RubiksCuberSolverClient solverClient = new RubiksCuberSolverClient();
 	private MindstormRubiksCubeClient client;
 	
-	public void setRectangles() {
-		this.kubeColors = drawCubeMap();
-	}
-	
 	private String solutionStr;
 	
 	private final ColorFrameDecorator colorFrameDecorator = new ColorFrameDecorator();
-	
+
+	public void initController() {
+		setRectangles();
+		initRanges();
+		updateFilters();
+	}
+
+	private void setRectangles() {
+		this.kubeColors = drawCubeMap();
+	}
+
 	@FXML
 	private TilePane cubeMap;
 	@FXML
@@ -151,8 +156,7 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	
 	// a timer for acquiring the video stream
 	private ScheduledExecutorService timer;
-	private final ExecutorService subscriberExecutorService = Executors.newFixedThreadPool(NUMBER_OF_SUBSCRIBERS);
-	
+
 	private FrameGrabber frameGrabber;
 	
 	private CubeColorsReader colorsReader = null;
@@ -167,7 +171,7 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 	
 	private boolean solveItModeEnabled = false;
 	
-	public void initRanges() {
+	private void initRanges() {
 		lowerRanges.set(CubeColors.RED.ordinal(), (int)redLow.getValue());
 		lowerRanges.set(CubeColors.ORANGE.ordinal(), (int)orangeLow.getValue());
 		lowerRanges.set(CubeColors.YELLOW.ordinal(), (int)yellowLow.getValue());
@@ -322,24 +326,15 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 		// grab a frame every 33 ms (30 frames/sec)
 		this.frameGrabber = new FrameGrabber(videoMessageBroker, VIDEO_DEVICE_INDEX);
 		
-		final Subscriber[] subscribers = new Subscriber[] {
-				new FrameObserver(originalFrame, new SquareFrameDecorator()),
-				new FrameObserver(processedFrame, new ProcessedFrameDecorator(lowerRanges, upperRanges, showFilters, saturationValue, valueValue)),
-				new FrameObserver(colorFrame, colorFrameDecorator),
-				this.colorsReader
-				};
-		if (subscribers.length >= NUMBER_OF_SUBSCRIBERS) {
-			throw new IllegalStateException();
-		}
-		
 		// subscribe
-		for (final Subscriber<Mat> subscriber : subscribers) {
-			videoMessageBroker.subscribe(subscriber);
-		}
-		// submit
-		for (final Subscriber<Mat> subscriber : subscribers) {
-			this.subscriberExecutorService.submit(subscriber);
-		}
+		final FrameObserver squareFrameObserver = new FrameObserver(originalFrame, new SquareFrameDecorator());
+		videoMessageBroker.subscribe("queue", squareFrameObserver::process);
+		final FrameObserver processedFrameObserver = new FrameObserver(processedFrame, new ProcessedFrameDecorator(lowerRanges, upperRanges, showFilters, saturationValue, valueValue));
+		videoMessageBroker.subscribe("queue", processedFrameObserver::process);
+		final FrameObserver colorFrameObserver = new FrameObserver(colorFrame, colorFrameDecorator);
+		videoMessageBroker.subscribe("queue", colorFrameObserver::process);
+
+		videoMessageBroker.subscribe("queue", colorsReader::process);
 
 		this.timer = Executors.newSingleThreadScheduledExecutor();
 		this.timer.scheduleAtFixedRate(frameGrabber, 0, 60, TimeUnit.MILLISECONDS);
@@ -358,14 +353,9 @@ public class RubiksCubeAppController implements Closeable, PropertyChangeListene
 				// stop the timer
 				this.timer.shutdown();
 				this.timer.awaitTermination(1, TimeUnit.SECONDS);
-				((Closeable)this.frameGrabber).close();
+				this.frameGrabber.close();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-			}
-		}
-		for (final Runnable runnable : subscriberExecutorService.shutdownNow()) {
-			if (runnable instanceof Closeable) {
-				((Closeable)runnable).close();
 			}
 		}
 	}

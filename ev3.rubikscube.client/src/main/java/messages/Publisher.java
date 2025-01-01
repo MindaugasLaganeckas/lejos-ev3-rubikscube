@@ -10,7 +10,7 @@ public abstract class Publisher<T> implements Runnable {
 	public void run() {
 		try {
 			final IMessage<T> message = createMessage();
-			broker.publish(message);
+			broker.publish("queue", message);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
