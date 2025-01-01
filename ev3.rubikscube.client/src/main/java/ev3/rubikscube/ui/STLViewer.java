@@ -51,8 +51,9 @@ public class STLViewer extends Application {
             // Set up a RotateTransition
             rotateTransition = new RotateTransition(Duration.seconds(2), front);
             rotateTransition.setByAngle(90);
-            rotateTransition.setCycleCount(RotateTransition.INDEFINITE);
+            rotateTransition.setCycleCount(1);
             rotateTransition.setAxis(Rotate.Z_AXIS);
+            rotateTransition.setAutoReverse(false);
         }
 
         // Setup scene
@@ -67,8 +68,6 @@ public class STLViewer extends Application {
         stage.setScene(scene);
         stage.setTitle("Enhanced STL Viewer");
         stage.show();
-
-        rotateTransition.play();
     }
 
     private Group createCubeMeshView() {
@@ -183,6 +182,8 @@ public class STLViewer extends Application {
                 // Track mouse position when either button is pressed
                 mouseX = event.getSceneX();
                 mouseY = event.getSceneY();
+                log.info("start rotation");
+                rotateTransition.play();
             }
         });
 
