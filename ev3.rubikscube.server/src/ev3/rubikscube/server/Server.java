@@ -19,6 +19,7 @@ import ev3.rubikscube.supportingmoves.Up;
 import ev3.rubikscube.supportingmoves.Up2;
 import ev3.rubikscube.statecontrollers.CubeSideController;
 import ev3.rubikscube.statecontrollers.CubeSideState;
+import ev3.rubikscube.statecontrollers.ForkPosition;
 import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
 import lejos.hardware.lcd.Font;
@@ -70,7 +71,7 @@ public class Server {
 	private static final RegulatedMotor rightSide = Motor.D;
 	private static final RegulatedMotor forkMotor = Motor.B;
 	private static final RegulatedMotor backMotor = Motor.C;
-	private static final ForkStateController forkStateController = new ForkStateController(ForkState.OFF, backMotor);
+	private static final ForkStateController forkStateController = new ForkStateController(ForkState.OFF, ForkPosition.VERTICAL, backMotor);
 	private static CubeSideController cubeStateController;
 	
 	private static final int port = 3333;

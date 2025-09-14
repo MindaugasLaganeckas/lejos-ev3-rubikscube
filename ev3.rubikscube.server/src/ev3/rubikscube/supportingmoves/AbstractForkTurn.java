@@ -24,11 +24,8 @@ public class AbstractForkTurn implements Move {
 
 	public void rotate(final int direction) {
 		forkStateController.setStateToOn();
-		forkMotor.rotate(direction * -45);
-		forkStateController.setStateToOff();
-		forkMotor.rotate(direction * 95);
-		forkStateController.setStateToOn();
-		forkMotor.rotate(direction * -60);
-		forkMotor.rotate(direction * 10);
+		forkMotor.rotate(direction * -95);
+		forkMotor.rotate(direction * 5);
+		forkStateController.setNextPosition();
 	}
 }

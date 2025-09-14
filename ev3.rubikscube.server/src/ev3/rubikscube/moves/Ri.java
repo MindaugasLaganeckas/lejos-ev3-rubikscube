@@ -16,7 +16,7 @@ public class Ri implements Move {
 	}
 
 	public void action() {
-		forkStateController.setStateToOn();
+		forkStateController.setVerticalPosition();
 		motor.rotate(105);
 		motor.rotate(-15);
 	}

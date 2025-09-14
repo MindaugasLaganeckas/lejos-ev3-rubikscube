@@ -16,7 +16,7 @@ public class L2 implements Move {
 	}
 
 	public void action() {
-		forkStateController.setStateToOn();
+		forkStateController.setVerticalPosition();
 		motor.rotate(195);
 		motor.rotate(-15);
 	}
