@@ -1,8 +1,5 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="RubiksCubeApp" type="Application" factoryName="Application" nameIsGenerated="true">
-    <envs>
-      <env name="LD_LIBRARY_PATH" value="$USER_HOME$/Downloads/lib:$LD_LIBRARY_PATH" />
-    </envs>
     <option name="MAIN_CLASS_NAME" value="ev3.rubikscube.ui.RubiksCubeApp" />
     <module name="ev3.rubikscube.client" />
     <extension name="coverage">
