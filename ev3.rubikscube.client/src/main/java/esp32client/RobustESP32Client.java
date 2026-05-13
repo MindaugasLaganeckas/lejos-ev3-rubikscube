@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -14,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * A robust MJPEG-like stream client that fetches snapshots sequentially.
  */
 @Slf4j
-public class RobustESP32Client {
+public class RobustESP32Client implements Closeable {
     private final String url;
     private final InputStreamProcessor inputStreamProcessor;
     private final OkHttpClient client;
@@ -80,10 +81,8 @@ public class RobustESP32Client {
         });
     }
 
-    /**
-     * Call this when you close the window or app to stop the background threads.
-     */
-    public void stop() {
+    @Override
+    public void close() throws IOException {
         this.isRunning = false;
         this.executor.shutdownNow();
     }

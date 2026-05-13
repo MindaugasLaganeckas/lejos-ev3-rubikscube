@@ -21,16 +21,22 @@ public class InputStreamProcessor {
         Mat destination = null;
         try {
             destination = ImageUtils.inputStreamToMat(in);
-            ImageUtils.flipImage(destination, destination, true);
-            //ImageUtils.adjustContrast(destination, destination, 1.0d, 0.0d);
-            final RubiksColorDetector.CubeColor[][] dominantColorsInGrid = this.rubiksColorDetector.getDominantColorsInGrid(destination, Constants.SIDE_LENGTH);
-            ImageUtils.overlayDetectedColors(destination, dominantColorsInGrid, Constants.SIDE_LENGTH, this.isSideCamera);
-            EventBus.getDefault().post(new Frame(this.cameraIndex, ImageUtils.matToBufferedImage(destination)));
+            processMat(destination);
         } catch (final IOException e) {
             if (destination != null) {
                 destination.release();
             }
             log.error("Camera {} decode error: {}", +this.cameraIndex, e.getMessage());
         }
+    }
+
+    /**
+     * Caller is responsible to close @param destination
+     */
+    public void processMat(final Mat destination) {
+        ImageUtils.flipImage(destination, destination, true);
+        final RubiksColorDetector.CubeColor[][] dominantColorsInGrid = this.rubiksColorDetector.getDominantColorsInGrid(destination, Constants.SIDE_LENGTH);
+        ImageUtils.overlayDetectedColors(destination, dominantColorsInGrid, Constants.SIDE_LENGTH, this.isSideCamera);
+        EventBus.getDefault().post(new Frame(this.cameraIndex, ImageUtils.matToBufferedImage(destination)));
     }
 }
