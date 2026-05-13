@@ -5,6 +5,7 @@ import okhttp3.*;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.opencv.core.Core;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -25,8 +26,10 @@ public class RobustESP32ClientUI extends JFrame {
     public RobustESP32ClientUI() {
         setTitle("OV3660 Stream Monitor");
         this.setLayout(new GridLayout(1, 2));
-        this.add(this.displayLabels[0]);
-        this.add(this.displayLabels[1]);
+
+        this.add(this.displayLabels[1]); // main camera
+        this.add(this.displayLabels[0]); // right hand side camera
+
         setSize(600, 400);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -47,12 +50,12 @@ public class RobustESP32ClientUI extends JFrame {
                 .readTimeout(5, TimeUnit.SECONDS) // Give the sensor time to capture
                 .retryOnConnectionFailure(true) // Let OkHttp handle minor hiccups
                 .build();
-
-        this.clients.add(new RobustESP32Client("http://192.168.1.88:80/capture", 0, bus, client));
-        this.clients.add(new RobustESP32Client("http://192.168.1.89:80/capture", 1, bus, client));
+        this.clients.add(new RobustESP32Client("http://192.168.1.88:80/capture", new InputStreamProcessor(0, true), client));
+        this.clients.add(new RobustESP32Client("http://192.168.1.89:80/capture", new InputStreamProcessor(1, false), client));
     }
 
     public static void main(final String[] args) {
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         SwingUtilities.invokeLater(RobustESP32ClientUI::new);
     }
 
