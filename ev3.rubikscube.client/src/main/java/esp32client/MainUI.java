@@ -64,14 +64,26 @@ public class MainUI extends JFrame {
                 .readTimeout(5, TimeUnit.SECONDS) // Give the sensor time to capture
                 .retryOnConnectionFailure(true) // Let OkHttp handle minor hiccups
                 .build();
-        this.clients.add(new RobustLogitechC920Client(new InputStreamProcessor(LEFT_CAMERA_INDEX, true)));
-        this.clients.add(new RobustESP32Client("http://192.168.1.88:80/capture", new InputStreamProcessor(RIGHT_CAMERA_INDEX, true), client));
-        this.clients.add(new RobustESP32Client("http://192.168.1.89:80/capture", new InputStreamProcessor(MAIN_CAMERA_INDEX, false), client));
+        final RubiksColorDetector rubiksColorDetector = new RubiksColorDetector();
+        this.clients.add(new RobustLogitechC920Client(new InputStreamProcessor(rubiksColorDetector, LEFT_CAMERA_INDEX, true)));
+        this.clients.add(new RobustESP32Client("http://192.168.1.88:80/capture", new InputStreamProcessor(rubiksColorDetector, RIGHT_CAMERA_INDEX, true), client));
+        this.clients.add(new RobustESP32Client("http://192.168.1.89:80/capture", new InputStreamProcessor(rubiksColorDetector, MAIN_CAMERA_INDEX, false), client));
+
     }
 
     public static void main(final String[] args) {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         SwingUtilities.invokeLater(MainUI::new);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void processFrame(final Frame frame) {
+        if (frame.cameraIndex() >= 0 && frame.cameraIndex() < this.numberOfViews) {
+            final JLabel label = this.displayLabels[frame.cameraIndex()];
+            final ImageIcon icon = new ImageIcon(frame.bufferedImage());
+            label.setIcon(icon);
+            label.setText("");
+        }
     }
 
     private void shutdown() throws IOException {
@@ -84,15 +96,5 @@ public class MainUI extends JFrame {
         EventBus.getDefault().unregister(this);
         // 3. Optional: If you want the app to exit completely
         System.exit(0);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
-    public void processFrame(final Frame frame) {
-        if (frame.cameraIndex() >= 0 && frame.cameraIndex() < this.numberOfViews) {
-            final JLabel label = this.displayLabels[frame.cameraIndex()];
-            final ImageIcon icon = new ImageIcon(frame.bufferedImage());
-            label.setIcon(icon);
-            label.setText("");
-        }
     }
 }

@@ -11,7 +11,7 @@ import java.io.InputStream;
 @Slf4j
 @RequiredArgsConstructor
 public class InputStreamProcessor {
-    private final RubiksColorDetector rubiksColorDetector = new RubiksColorDetector();
+    private final RubiksColorDetector rubiksColorDetector;
     private final int cameraIndex;
     private final boolean isSideCamera;
 
@@ -35,7 +35,7 @@ public class InputStreamProcessor {
      */
     public void processMat(final Mat destination) {
         ImageUtils.flipImage(destination, destination, true);
-        final RubiksColorDetector.CubeColor[][] dominantColorsInGrid = this.rubiksColorDetector.getDominantColorsInGrid(destination, Constants.SIDE_LENGTH);
+        final CubeColor[][] dominantColorsInGrid = this.rubiksColorDetector.getDominantColorsInGrid(destination, Constants.SIDE_LENGTH);
         ImageUtils.overlayDetectedColors(destination, dominantColorsInGrid, Constants.SIDE_LENGTH, this.isSideCamera);
         EventBus.getDefault().post(new Frame(this.cameraIndex, ImageUtils.matToBufferedImage(destination)));
     }

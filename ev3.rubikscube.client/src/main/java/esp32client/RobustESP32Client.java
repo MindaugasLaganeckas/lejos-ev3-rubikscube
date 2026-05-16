@@ -32,7 +32,6 @@ public class RobustESP32Client implements Closeable {
 
         // Single thread ensures we aren't decoding two frames from the SAME camera at once
         this.executor = Executors.newSingleThreadScheduledExecutor();
-
         // Kick off the loop
         startStreaming();
     }

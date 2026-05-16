@@ -40,7 +40,7 @@ public class ImageUtils {
         return image;
     }
 
-    private static Scalar getBgrFromEnum(final RubiksColorDetector.CubeColor color) {
+    private static Scalar getBgrFromEnum(final CubeColor color) {
         return switch (color) {
             case WHITE -> new Scalar(255, 255, 255);
             case YELLOW -> new Scalar(0, 255, 255);
@@ -51,7 +51,7 @@ public class ImageUtils {
         };
     }
 
-    public static void overlayDetectedColors(final Mat image, final RubiksColorDetector.CubeColor[][] grid, final int sideLength, final boolean showVerticalCenterOnly) {
+    public static void overlayDetectedColors(final Mat image, final CubeColor[][] grid, final int sideLength, final boolean showVerticalCenterOnly) {
         final GridCalculator gridCalculator = new GridCalculator();
         gridCalculator.produceGrid(image, sideLength, (row, col, roi) -> {
             if (showVerticalCenterOnly) {
@@ -64,10 +64,10 @@ public class ImageUtils {
         });
     }
 
-    private static void overlaySingleRectangle(final Mat image, final RubiksColorDetector.CubeColor[][] grid, final int row, final int col, final Rect roi) {
+    private static void overlaySingleRectangle(final Mat image, final CubeColor[][] grid, final int row, final int col, final Rect roi) {
         // Get the enum for this specific cell (adjusting indices for 0-2 range)
         // Assuming your grid is stored as [row+1][col+1] or similar
-        final RubiksColorDetector.CubeColor colorEnum = grid[row + 1][col + 1];
+        final CubeColor colorEnum = grid[row + 1][col + 1];
         // Convert Enum to BGR Scalar
         final Scalar bgr = getBgrFromEnum(colorEnum);
         // Use -1 for thickness to fill the shape

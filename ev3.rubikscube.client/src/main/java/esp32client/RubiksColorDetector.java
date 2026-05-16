@@ -65,13 +65,13 @@ public class RubiksColorDetector {
         }
 
         // 3. Logic for Hue-based colors
-        if (h < 4 || h > 160) {
+        if (h < 3 || h > 160) {
             return CubeColor.RED;
         }
         if (h < 25) {
             return CubeColor.ORANGE;
         }
-        if (h < 35) {
+        if (h < 40) {
             return CubeColor.YELLOW;
         }
         if (h < 85) {
@@ -92,7 +92,4 @@ public class RubiksColorDetector {
         final Scalar dominantBgr = calculateDominantColor(cell);
         return identifyColor(dominantBgr);
     }
-
-    // Define the names for clarity
-    public enum CubeColor {WHITE, YELLOW, RED, ORANGE, GREEN, BLUE}
 }
