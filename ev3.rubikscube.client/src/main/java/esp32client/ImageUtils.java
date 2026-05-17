@@ -1,5 +1,6 @@
 package esp32client;
 
+import esp32client.enums.CubeColor;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;

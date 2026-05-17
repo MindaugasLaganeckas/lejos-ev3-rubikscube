@@ -1,8 +1,12 @@
 package esp32client;
 
+import esp32client.enums.CameraId;
+import esp32client.enums.SolutionStatus;
+import esp32client.events.EventBusWrapper;
+import esp32client.events.FrameCreated;
+import esp32client.events.SolutionStatusChanged;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.opencv.core.Core;
@@ -18,27 +22,35 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static esp32client.Constants.*;
-
 @Slf4j
 public class MainUI extends JFrame {
+
+    // event bus
+    private final EventBusWrapper eventBus = new EventBusWrapper();
 
     private final JLabel[] displayLabels = {
             new JLabel("Waiting for stream...", SwingConstants.CENTER),
             new JLabel("Waiting for stream...", SwingConstants.CENTER),
             new JLabel("Waiting for stream...", SwingConstants.CENTER),
     };
-    private final int numberOfViews = this.displayLabels.length;
-
     private final List<Closeable> clients = new ArrayList<>();
 
     public MainUI() {
-        setTitle("OV3660 Stream Monitor");
-        this.setLayout(new GridLayout(1, this.numberOfViews));
 
-        this.add(this.displayLabels[LEFT_CAMERA_INDEX]);
-        this.add(this.displayLabels[MAIN_CAMERA_INDEX]); // main camera
-        this.add(this.displayLabels[RIGHT_CAMERA_INDEX]); // right hand side camera
+
+        setTitle("OV3660 Stream Monitor");
+        this.setLayout(new GridLayout(2, this.displayLabels.length));
+
+        this.add(this.displayLabels[CameraId.LEFT.ordinal()]);
+        this.add(this.displayLabels[CameraId.MAIN.ordinal()]); // main camera
+        this.add(this.displayLabels[CameraId.RIGHT.ordinal()]);
+        final JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        final JButton startStopButton = new JButton("Start");
+        startStopButton.setPreferredSize(new Dimension(80, 30));
+        buttonPanel.add(startStopButton);
+        this.add(new JPanel());
+        this.add(buttonPanel);
+        this.add(new JPanel());
 
         setSize(1000, 400);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -55,9 +67,7 @@ public class MainUI extends JFrame {
             }
         });
 
-        setVisible(true);
-        final EventBus bus = EventBus.getDefault();
-        bus.register(this);
+        this.eventBus.register(this);
 
         final OkHttpClient client = new OkHttpClient.Builder()
                 .connectTimeout(5, TimeUnit.SECONDS) // Give it time to handshaking
@@ -65,10 +75,24 @@ public class MainUI extends JFrame {
                 .retryOnConnectionFailure(true) // Let OkHttp handle minor hiccups
                 .build();
         final RubiksColorDetector rubiksColorDetector = new RubiksColorDetector();
-        this.clients.add(new RobustLogitechC920Client(new InputStreamProcessor(rubiksColorDetector, LEFT_CAMERA_INDEX, true)));
-        this.clients.add(new RobustESP32Client("http://192.168.1.88:80/capture", new InputStreamProcessor(rubiksColorDetector, RIGHT_CAMERA_INDEX, true), client));
-        this.clients.add(new RobustESP32Client("http://192.168.1.89:80/capture", new InputStreamProcessor(rubiksColorDetector, MAIN_CAMERA_INDEX, false), client));
+        final InputStreamProcessor leftProcessor = new InputStreamProcessor(this.eventBus, rubiksColorDetector, CameraId.LEFT);
+        this.clients.add(new RobustLogitechC920Client(leftProcessor));
+        final InputStreamProcessor rightProcessor = new InputStreamProcessor(this.eventBus, rubiksColorDetector, CameraId.RIGHT);
+        this.clients.add(new RobustESP32Client("http://192.168.1.88:80/capture", rightProcessor, client));
+        final InputStreamProcessor mainProcessor = new InputStreamProcessor(this.eventBus, rubiksColorDetector, CameraId.MAIN);
+        this.clients.add(new RobustESP32Client("http://192.168.1.89:80/capture", mainProcessor, client));
 
+        this.eventBus.register(leftProcessor);
+        this.eventBus.register(rightProcessor);
+        this.eventBus.register(mainProcessor);
+
+        final MainController mainController = new MainController(this.eventBus);
+        this.eventBus.register(mainController);
+
+        // Add a listener for the start/stop button
+        startStopButton.addActionListener(e -> toggleCameraStreams());
+
+        setVisible(true);
     }
 
     public static void main(final String[] args) {
@@ -77,13 +101,11 @@ public class MainUI extends JFrame {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
-    public void processFrame(final Frame frame) {
-        if (frame.cameraIndex() >= 0 && frame.cameraIndex() < this.numberOfViews) {
-            final JLabel label = this.displayLabels[frame.cameraIndex()];
-            final ImageIcon icon = new ImageIcon(frame.bufferedImage());
-            label.setIcon(icon);
-            label.setText("");
-        }
+    public void processFrame(final FrameCreated frame) {
+        final JLabel label = this.displayLabels[frame.cameraId().ordinal()];
+        final ImageIcon icon = new ImageIcon(frame.bufferedImage());
+        label.setIcon(icon);
+        label.setText("");
     }
 
     private void shutdown() throws IOException {
@@ -93,8 +115,12 @@ public class MainUI extends JFrame {
             client.close();
         }
         // 2. Unregister from EventBus to prevent memory leaks
-        EventBus.getDefault().unregister(this);
+        this.eventBus.unsubscribeAll();
         // 3. Optional: If you want the app to exit completely
         System.exit(0);
+    }
+
+    private void toggleCameraStreams() {
+        this.eventBus.post(new SolutionStatusChanged(SolutionStatus.STARTED));
     }
 }
