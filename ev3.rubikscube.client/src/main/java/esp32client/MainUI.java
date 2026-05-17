@@ -33,8 +33,6 @@ public class MainUI extends JFrame {
     // event bus
     private final EventBusWrapper eventBus = new EventBusWrapper();
 
-    private final MindstormRubiksCubeClient robotClient = new MindstormRubiksCubeClient("192.168.1.130", 3333);
-
     private final JLabel[] displayLabels = {
             new JLabel("Waiting for stream...", SwingConstants.CENTER),
             new JLabel("Waiting for stream...", SwingConstants.CENTER),
@@ -92,7 +90,9 @@ public class MainUI extends JFrame {
         this.eventBus.register(rightProcessor);
         this.eventBus.register(mainProcessor);
 
-        final MainController mainController = new MainController(this.eventBus, this.robotClient);
+        final MindstormRubiksCubeClient robotClient = new MindstormRubiksCubeClient(this.eventBus, "192.168.1.130", 3333);
+        this.eventBus.register(robotClient);
+        final MainController mainController = new MainController(this.eventBus);
         this.eventBus.register(mainController);
 
         // Add a listener for the start/stop button

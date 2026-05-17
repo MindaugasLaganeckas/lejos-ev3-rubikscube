@@ -25,7 +25,9 @@ public class EventBusWrapper {
     }
 
     public void post(final Object event) {
-        this.eventBus.post(event);
+        if (event != null) {
+            this.eventBus.post(event);
+        }
     }
 
 }

@@ -1,12 +1,20 @@
 package esp32client.physical;
 
+import esp32client.commands.MakeTurnCommand;
+import esp32client.enums.RobotStatus;
+import esp32client.events.EventBusWrapper;
+import esp32client.events.RobotStatusChanged;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.*;
 
 @Slf4j
+@RequiredArgsConstructor
 public class MindstormRubiksCubeClient implements Closeable {
 
     private static final String COMMAND_FINISH = "FINISH";
@@ -48,31 +56,17 @@ public class MindstormRubiksCubeClient implements Closeable {
             put(COMMAND_FINISH, 100);
         }
     };
-
+    private final EventBusWrapper eventBus;
+    private final String address;
+    private final int port;
+    private final boolean connected = true;
     private Socket socket;
     private DataInputStream din;
     private DataOutputStream dout;
-
     private boolean debugModeEnabled;
 
-    private boolean connected = true;
-
-    public MindstormRubiksCubeClient(final String address, final int port) {
-        try {
-            this.socket = new Socket(address, port);
-            this.din = new DataInputStream(this.socket.getInputStream());
-            this.dout = new DataOutputStream(this.socket.getOutputStream());
-        } catch (final IOException e) {
-            this.connected = false;
-            this.socket = null;
-            this.din = null;
-            this.dout = null;
-            log.error("Connection to mindstorm failed", e);
-        }
-    }
-
     public static void main(final String[] args) throws Exception {
-        try (final MindstormRubiksCubeClient client = new MindstormRubiksCubeClient("192.168.1.130", 3333)) {
+        try (final MindstormRubiksCubeClient client = new MindstormRubiksCubeClient(new EventBusWrapper(), "192.168.1.130", 3333)) {
             final List<String> list = new LinkedList<>(communicationCodes.keySet());
             final Random rand = new Random();
             int counter = 0;
@@ -84,11 +78,24 @@ public class MindstormRubiksCubeClient implements Closeable {
         }
     }
 
+    public void connect(final String address, final int port) throws IOException {
+        this.socket = new Socket(address, port);
+        this.din = new DataInputStream(this.socket.getInputStream());
+        this.dout = new DataOutputStream(this.socket.getOutputStream());
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void process(final MakeTurnCommand command) {
+        this.eventBus.post(new RobotStatusChanged(RobotStatus.IN_MOTION));
+        makeXTurn();
+        this.eventBus.post(new RobotStatusChanged(RobotStatus.IDLE));
+    }
+
     public void enableDebugMode(final boolean enableDebugMode) {
         this.debugModeEnabled = enableDebugMode;
     }
 
-    public void makeXTurn() throws IOException {
+    public void makeXTurn() {
         log.info("makeXTurn(). Status {}", this.connected);
     }
 
@@ -127,5 +134,8 @@ public class MindstormRubiksCubeClient implements Closeable {
         if (this.dout != null) {
             this.dout.close();
         }
+    }
+
+    public void turn() {
     }
 }
