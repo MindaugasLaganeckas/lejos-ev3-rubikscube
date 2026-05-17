@@ -1,5 +1,6 @@
-package esp32client;
+package esp32client.physical;
 
+import esp32client.util.InputStreamProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.opencv.core.Mat;
 import org.opencv.videoio.VideoCapture;

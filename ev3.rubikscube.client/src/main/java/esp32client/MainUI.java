@@ -5,6 +5,11 @@ import esp32client.enums.SolutionStatus;
 import esp32client.events.EventBusWrapper;
 import esp32client.events.FrameCreated;
 import esp32client.events.SolutionStatusChanged;
+import esp32client.physical.MindstormRubiksCubeClient;
+import esp32client.physical.RobustESP32Client;
+import esp32client.physical.RobustLogitechC920Client;
+import esp32client.util.ColorAnalyzer;
+import esp32client.util.InputStreamProcessor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.greenrobot.eventbus.Subscribe;
@@ -28,6 +33,8 @@ public class MainUI extends JFrame {
     // event bus
     private final EventBusWrapper eventBus = new EventBusWrapper();
 
+    private final MindstormRubiksCubeClient robotClient = new MindstormRubiksCubeClient("192.168.1.130", 3333);
+
     private final JLabel[] displayLabels = {
             new JLabel("Waiting for stream...", SwingConstants.CENTER),
             new JLabel("Waiting for stream...", SwingConstants.CENTER),
@@ -36,8 +43,6 @@ public class MainUI extends JFrame {
     private final List<Closeable> clients = new ArrayList<>();
 
     public MainUI() {
-
-
         setTitle("OV3660 Stream Monitor");
         this.setLayout(new GridLayout(2, this.displayLabels.length));
 
@@ -75,18 +80,19 @@ public class MainUI extends JFrame {
                 .retryOnConnectionFailure(true) // Let OkHttp handle minor hiccups
                 .build();
         final RubiksColorDetector rubiksColorDetector = new RubiksColorDetector();
-        final InputStreamProcessor leftProcessor = new InputStreamProcessor(this.eventBus, rubiksColorDetector, CameraId.LEFT);
+        final ColorAnalyzer colorAnalyzer = new ColorAnalyzer();
+        final InputStreamProcessor leftProcessor = new InputStreamProcessor(colorAnalyzer, this.eventBus, rubiksColorDetector, CameraId.LEFT);
         this.clients.add(new RobustLogitechC920Client(leftProcessor));
-        final InputStreamProcessor rightProcessor = new InputStreamProcessor(this.eventBus, rubiksColorDetector, CameraId.RIGHT);
+        final InputStreamProcessor rightProcessor = new InputStreamProcessor(colorAnalyzer, this.eventBus, rubiksColorDetector, CameraId.RIGHT);
         this.clients.add(new RobustESP32Client("http://192.168.1.88:80/capture", rightProcessor, client));
-        final InputStreamProcessor mainProcessor = new InputStreamProcessor(this.eventBus, rubiksColorDetector, CameraId.MAIN);
+        final InputStreamProcessor mainProcessor = new InputStreamProcessor(colorAnalyzer, this.eventBus, rubiksColorDetector, CameraId.MAIN);
         this.clients.add(new RobustESP32Client("http://192.168.1.89:80/capture", mainProcessor, client));
 
         this.eventBus.register(leftProcessor);
         this.eventBus.register(rightProcessor);
         this.eventBus.register(mainProcessor);
 
-        final MainController mainController = new MainController(this.eventBus);
+        final MainController mainController = new MainController(this.eventBus, this.robotClient);
         this.eventBus.register(mainController);
 
         // Add a listener for the start/stop button

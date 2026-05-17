@@ -1,4 +1,4 @@
-package esp32client;
+package esp32client.util;
 
 import esp32client.enums.CubeColor;
 import org.opencv.core.*;

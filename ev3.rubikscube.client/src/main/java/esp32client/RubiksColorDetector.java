@@ -1,6 +1,7 @@
 package esp32client;
 
 import esp32client.enums.CubeColor;
+import esp32client.util.GridCalculator;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
